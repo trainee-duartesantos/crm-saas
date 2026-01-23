@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Scopes\TenantScope;
 
 
 class User extends Authenticatable
@@ -70,5 +71,10 @@ class User extends Authenticatable
     public function isUser(): bool
     {
         return $this->role === 'user';
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new TenantScope);
     }
 }

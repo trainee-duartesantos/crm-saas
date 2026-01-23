@@ -16,12 +16,9 @@ Route::get('dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/tenant-test', function () {
-    $user = auth()->user();
-
     return [
-        'user_id' => $user->id,
-        'tenant_id' => $user->tenant_id,
-        'tenant' => $user->tenant,
+        'tenant' => tenant(),
+        'tenant_id' => tenant()?->id,
     ];
 })->middleware('auth');
 

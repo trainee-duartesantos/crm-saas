@@ -4,7 +4,7 @@ namespace App\Support;
 
 use App\Models\Tenant;
 
-class TenantManager
+class TenantContext
 {
     protected ?Tenant $tenant = null;
 
@@ -18,8 +18,13 @@ class TenantManager
         return $this->tenant;
     }
 
-    public function has(): bool
+    public function check(): bool
     {
         return $this->tenant !== null;
+    }
+
+    public function id(): ?int
+    {
+        return $this->tenant?->id;
     }
 }

@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\User;
+use Inertia\Inertia;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index()
     {
         $this->authorize('viewAny', User::class);
 
-        return User::all(); // já filtrado por tenant
+        return Inertia::render('Users/Index', [
+            'users' => User::all(),
+        ]);
     }
-
 }

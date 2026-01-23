@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
-use App\Support\TenantManager;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -20,14 +20,8 @@ Route::get('/admin-only', function () {
 })->middleware(['auth', 'role:admin']);
 
 Route::middleware(['auth'])->group(function () {
-
-    Route::get('/users', function () {
-        authorize('viewAny', \App\Models\User::class);
-
-        return Inertia::render('Users/Index');
-    });
-
+    Route::get('/users', [UserController::class, 'index'])
+        ->name('users.index');
 });
-
 
 require __DIR__.'/settings.php';

@@ -34,6 +34,7 @@ class CreateNewUser implements CreatesNewUsers
             'email' => $input['email'],
             'password' => $input['password'],
             'tenant_id' => $tenant->id,
+            'role' => 'owner',
         ]);
     }
 }

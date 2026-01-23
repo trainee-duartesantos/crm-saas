@@ -15,12 +15,8 @@ Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/tenant-test', function () {
-    return [
-        'tenant' => tenant(),
-        'tenant_id' => tenant()?->id,
-    ];
-})->middleware('auth');
-
+Route::get('/admin-only', function () {
+    return 'Hello admin';
+})->middleware(['auth', 'role:admin']);
 
 require __DIR__.'/settings.php';

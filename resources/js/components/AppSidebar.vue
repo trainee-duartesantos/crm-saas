@@ -14,9 +14,22 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import {
+    BookOpen,
+    Building,
+    CreditCard,
+    Folder,
+    LayoutGrid,
+    Users,
+} from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
+/* 👇 role vem do layout */
+const props = defineProps<{
+    role: 'user' | 'admin' | 'owner';
+}>();
+
+/* Base: todos veem */
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
@@ -24,6 +37,38 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
 ];
+
+/* Admin + Owner */
+if (props.role === 'admin' || props.role === 'owner') {
+    mainNavItems.push(
+        {
+            title: 'Users',
+            href: '/users',
+            icon: Users,
+        },
+        {
+            title: 'Projects',
+            href: '/projects',
+            icon: Folder,
+        },
+    );
+}
+
+/* Só Owner */
+if (props.role === 'owner') {
+    mainNavItems.push(
+        {
+            title: 'Tenant',
+            href: '/tenant',
+            icon: Building,
+        },
+        {
+            title: 'Billing',
+            href: '/billing',
+            icon: CreditCard,
+        },
+    );
+}
 
 const footerNavItems: NavItem[] = [
     {
@@ -62,5 +107,4 @@ const footerNavItems: NavItem[] = [
             <NavUser />
         </SidebarFooter>
     </Sidebar>
-    <slot />
 </template>

@@ -1,35 +1,27 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { dashboard } from '@/routes';
-import type { BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
 
-const page = usePage();
+import AdminDashboard from './Dashboard/AdminDashboard.vue';
+import OwnerDashboard from './Dashboard/OwnerDashboard.vue';
+import UserDashboard from './Dashboard/UserDashboard.vue';
 
-// 👇 agora sim, existe
+const page = usePage();
 const user = page.props.auth.user;
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard().url,
-    },
-];
+const roleComponentMap = {
+    owner: OwnerDashboard,
+    admin: AdminDashboard,
+    user: UserDashboard,
+};
+
+const DashboardComponent = roleComponentMap[user.role] ?? UserDashboard;
 </script>
 
 <template>
     <Head title="Dashboard" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4">
-            <p>User: {{ user.name }}</p>
-            <p>Role: {{ user.role }}</p>
-
-            <div v-if="user.role === 'owner'">👑 Owner dashboard</div>
-
-            <div v-else-if="user.role === 'admin'">🛠 Admin dashboard</div>
-
-            <div v-else>🙋 User dashboard</div>
-        </div>
+    <AppLayout>
+        <component :is="DashboardComponent" />
     </AppLayout>
 </template>

@@ -4,6 +4,10 @@ import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
 import type { BreadcrumbItem } from '@/types';
+import { usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+const user = page.props.auth.user;
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -16,7 +20,9 @@ withDefaults(defineProps<Props>(), {
 
 <template>
     <AppShell variant="sidebar">
-        <AppSidebar />
+        <!-- 🔥 Passamos o role para o Sidebar -->
+        <AppSidebar :role="user.role" />
+
         <AppContent variant="sidebar" class="overflow-x-hidden">
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
             <slot />

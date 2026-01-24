@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\InviteAcceptController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -23,5 +24,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])
         ->name('users.index');
 });
+
+Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])
+    ->name('invites.accept');
+
+Route::post('/invites/accept', [InviteAcceptController::class, 'store'])
+    ->name('invites.accept.store');
 
 require __DIR__.'/settings.php';

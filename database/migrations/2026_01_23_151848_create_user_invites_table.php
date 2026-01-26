@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('role');
             $table->string('token')->unique();
             $table->timestamp('expires_at');
+            $table->timestamp('accepted_at')->nullable();
             $table->timestamps();
 
             $table->unique(['tenant_id', 'email']);

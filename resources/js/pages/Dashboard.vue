@@ -15,7 +15,8 @@ const roleComponentMap = {
     user: UserDashboard,
 };
 
-const DashboardComponent = roleComponentMap[user.role] ?? UserDashboard;
+const role = user.role as 'owner' | 'admin' | 'user';
+const DashboardComponent = roleComponentMap[role] ?? UserDashboard;
 </script>
 
 <template>

@@ -23,6 +23,12 @@ Route::get('/admin-only', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])
         ->name('users.index');
+
+    Route::get('/users/invite', [InviteController::class, 'create'])
+        ->name('users.invite');
+
+    Route::post('/users/invite', [InviteController::class, 'store'])
+        ->name('users.invite.store');
 });
 
 Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])

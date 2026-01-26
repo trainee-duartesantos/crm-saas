@@ -10,4 +10,9 @@ class UserInvitePolicy
     {
         return in_array($user->role, ['admin', 'owner']);
     }
+
+    public function inviteUsers(User $user): bool
+    {
+        return in_array($user->role, ['admin', 'owner']);
+    }
 }

@@ -12,10 +12,12 @@ class UserInvite extends Model
         'role',
         'token',
         'expires_at',
+        'accepted_at',
     ];
 
     protected $casts = [
         'expires_at' => 'datetime',
+        'accepted_at' => 'datetime',
     ];
 
     public function tenant()
@@ -26,6 +28,11 @@ class UserInvite extends Model
     public function isExpired(): bool
     {
         return $this->expires_at->isPast();
+    }
+
+    public function isAccepted(): bool
+    {
+        return ! is_null($this->accepted_at);
     }
 }
 

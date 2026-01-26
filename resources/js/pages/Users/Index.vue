@@ -1,22 +1,55 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
+import { ref } from 'vue';
+
+import invites from '@/routes/invites';
+import invite from '@/routes/users/invite';
+
+type User = {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+};
+
+type Invite = {
+    id: number;
+    email: string;
+    role: string;
+    accepted_at: string | null;
+    is_expired: boolean;
+};
 
 const props = defineProps<{
-    users: any[];
-    invites: any[];
+    users: User[];
+    invites: Invite[];
 }>();
 
 const page = usePage();
-const role = page.props.auth.user.role;
+const role = page.props.auth.user.role as 'user' | 'admin' | 'owner';
 
 const canInvite = role === 'admin' || role === 'owner';
 
-const resend = (id: number) => {
-    router.post(`/users/invite/${id}/resend`);
+const email = ref('');
+const inviteRole = ref<'user' | 'admin'>('user');
+
+const submitInvite = () => {
+    router.post(invite.store().url, {
+        email: email.value,
+        role: inviteRole.value,
+    });
+
+    // opcional: limpar inputs
+    email.value = '';
+    inviteRole.value = 'user';
 };
 
-const cancel = (id: number) => {
-    router.delete(`/users/invite/${id}`);
+const resendInvite = (id: number) => {
+    router.post(invites.resend(id).url);
+};
+
+const cancelInvite = (id: number) => {
+    router.delete(invites.destroy(id).url);
 };
 </script>
 
@@ -27,7 +60,7 @@ const cancel = (id: number) => {
             <h1 class="mb-2 text-xl font-semibold">Users</h1>
 
             <ul class="space-y-1">
-                <li v-for="user in users" :key="user.id">
+                <li v-for="user in props.users" :key="user.id">
                     {{ user.name }} — {{ user.email }} ({{ user.role }})
                 </li>
             </ul>
@@ -39,44 +72,47 @@ const cancel = (id: number) => {
 
             <ul class="space-y-2">
                 <li
-                    v-for="invite in invites"
-                    :key="invite.id"
+                    v-for="inv in props.invites"
+                    :key="inv.id"
                     class="flex items-center gap-3"
                 >
-                    <span> {{ invite.email }} — {{ invite.role }} </span>
+                    <span>{{ inv.email }} — {{ inv.role }}</span>
 
                     <!-- STATUS BADGE -->
                     <span
-                        v-if="invite.accepted_at"
-                        class="text-sm text-green-600"
+                        v-if="inv.accepted_at"
+                        class="rounded bg-green-100 px-2 py-0.5 text-xs text-green-700"
                     >
                         accepted
                     </span>
 
                     <span
-                        v-else-if="invite.is_expired"
-                        class="text-sm text-red-600"
+                        v-else-if="inv.is_expired"
+                        class="rounded bg-red-100 px-2 py-0.5 text-xs text-red-700"
                     >
                         expired
                     </span>
 
-                    <span v-else class="text-sm text-yellow-600">
+                    <span
+                        v-else
+                        class="rounded bg-yellow-100 px-2 py-0.5 text-xs text-yellow-700"
+                    >
                         pending
                     </span>
 
-                    <!-- ACTIONS -->
-                    <template v-if="canInvite && !invite.accepted_at">
+                    <!-- ACTIONS (Admin / Owner only) -->
+                    <template v-if="canInvite && !inv.accepted_at">
                         <button
-                            v-if="!invite.is_expired"
-                            @click="resend(invite.id)"
-                            class="text-sm text-blue-600"
+                            v-if="!inv.is_expired"
+                            @click="resendInvite(inv.id)"
+                            class="text-sm text-blue-600 hover:underline"
                         >
                             Resend
                         </button>
 
                         <button
-                            @click="cancel(invite.id)"
-                            class="text-sm text-red-600"
+                            @click="cancelInvite(inv.id)"
+                            class="text-sm text-red-600 hover:underline"
                         >
                             Cancel
                         </button>
@@ -86,21 +122,23 @@ const cancel = (id: number) => {
 
             <!-- INVITE FORM -->
             <div v-if="canInvite" class="mt-6">
-                <form method="post" action="/users/invite" class="flex gap-2">
+                <form @submit.prevent="submitInvite" class="flex gap-2">
                     <input
-                        name="email"
+                        v-model="email"
                         type="email"
                         placeholder="Email"
                         required
                         class="border px-2 py-1"
                     />
 
-                    <select name="role" class="border px-2 py-1">
+                    <select v-model="inviteRole" class="border px-2 py-1">
                         <option value="user">User</option>
                         <option value="admin">Admin</option>
                     </select>
 
-                    <button class="bg-black px-3 text-white">Invite</button>
+                    <button class="bg-black px-3 py-1 text-white">
+                        Invite
+                    </button>
                 </form>
             </div>
         </section>

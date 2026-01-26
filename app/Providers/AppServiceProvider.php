@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use App\Models\UserInvite;
+use App\Policies\UserInvitePolicy;
+use Illuminate\Support\Facades\Gate;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(UserInvite::class, UserInvitePolicy::class);
+
         $this->configureDefaults();
     }
 

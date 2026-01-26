@@ -2,32 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UserInvite;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use App\Mail\UserInviteMail;
-use Illuminate\Support\Facades\Mail;
+use App\Models\User;
+use App\Models\UserInvite;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class InviteController extends Controller
 {
-    /**
-     * Mostrar formulário de convite
-     */
-    public function create()
-    {
-        $this->authorize('inviteUsers');
-
-        return Inertia::render('Users/Invite');
-    }
+    use AuthorizesRequests;
 
     /**
      * Criar convite
      */
     public function store(Request $request)
     {
-        $this->authorize('inviteUsers');
+        // ✅ Policy: UserInvitePolicy@create
+        $this->authorize('create', UserInvite::class);
 
         $validated = $request->validate([
             'email' => ['required', 'email'],
@@ -56,16 +50,14 @@ class InviteController extends Controller
                 ],
                 [
                     'role' => $validated['role'],
-                    'token' => Str::uuid(),
+                    'token' => (string) Str::uuid(),
                     'expires_at' => now()->addDays(7),
                     'accepted_at' => null,
                 ]
             );
         });
 
-        Mail::to($invite->email)->send(
-            new UserInviteMail($invite)
-        );
+        Mail::to($invite->email)->send(new UserInviteMail($invite));
 
         return redirect()
             ->route('users.index')
@@ -74,20 +66,27 @@ class InviteController extends Controller
 
     public function resend(UserInvite $invite)
     {
-        $this->authorize('create', UserInvite::class);
+        // ✅ Policy: UserInvitePolicy@resend
+        $this->authorize('resend', $invite);
+
+        $invite->update([
+            'token' => (string) Str::uuid(),
+            'expires_at' => now()->addDays(7),
+            'accepted_at' => null,
+        ]);
 
         Mail::to($invite->email)->send(new UserInviteMail($invite));
 
-        return back()->with('success', 'Invitation resent.');
+        return back()->with('success', 'Invitation resent successfully.');
     }
 
     public function destroy(UserInvite $invite)
     {
+        // ✅ Policy: UserInvitePolicy@delete
         $this->authorize('delete', $invite);
 
         $invite->delete();
 
-        return back()->with('success', 'Invitation cancelled.');
+        return back()->with('success', 'Invitation cancelled successfully.');
     }
-
 }

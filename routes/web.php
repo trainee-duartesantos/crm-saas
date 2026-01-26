@@ -28,6 +28,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/users/invite', [InviteController::class, 'store'])
         ->name('users.invite.store');
 
+    Route::post('/invites/{invite}/resend', [InviteController::class, 'resend'])
+        ->name('invites.resend');
+
+    Route::delete('/invites/{invite}', [InviteController::class, 'destroy'])
+        ->name('invites.destroy');
 });
 
 Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\TenantAware;
+use Illuminate\Database\Eloquent\Model;
 
 class Customer extends Model
 {

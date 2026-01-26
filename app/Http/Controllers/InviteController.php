@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use App\Services\ActivityLogger;
 
 class InviteController extends Controller
 {
@@ -18,9 +19,9 @@ class InviteController extends Controller
     /**
      * Criar convite
      */
-    public function store(Request $request)
+       public function store(Request $request, ActivityLogger $logger)
     {
-        // ✅ Policy: UserInvitePolicy@create
+        // ✅ Policy
         $this->authorize('create', UserInvite::class);
 
         $validated = $request->validate([
@@ -59,14 +60,20 @@ class InviteController extends Controller
 
         Mail::to($invite->email)->send(new UserInviteMail($invite));
 
+        // ✅ AGORA SIM: Activity Log
+        $logger->log('invites.sent', $invite, [
+            'email' => $invite->email,
+            'expires_at' => $invite->expires_at?->toISOString(),
+        ]);
+
         return redirect()
             ->route('users.index')
             ->with('success', 'Invitation sent successfully.');
     }
 
-    public function resend(UserInvite $invite)
+
+    public function resend(UserInvite $invite, ActivityLogger $logger)
     {
-        // ✅ Policy: UserInvitePolicy@resend
         $this->authorize('resend', $invite);
 
         $invite->update([
@@ -77,16 +84,24 @@ class InviteController extends Controller
 
         Mail::to($invite->email)->send(new UserInviteMail($invite));
 
+        $logger->log('invites.resent', $invite, [
+            'email' => $invite->email,
+        ]);
+
         return back()->with('success', 'Invitation resent successfully.');
     }
 
-    public function destroy(UserInvite $invite)
+    public function destroy(UserInvite $invite, ActivityLogger $logger)
     {
-        // ✅ Policy: UserInvitePolicy@delete
         $this->authorize('delete', $invite);
+
+        $logger->log('invites.canceled', $invite, [
+            'email' => $invite->email,
+        ]);
 
         $invite->delete();
 
         return back()->with('success', 'Invitation cancelled successfully.');
     }
+
 }

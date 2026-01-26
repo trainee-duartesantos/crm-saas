@@ -10,8 +10,7 @@ use Illuminate\Validation\Rules\Password;
 use App\Models\UserInvite;
 use App\Policies\UserInvitePolicy;
 use Illuminate\Support\Facades\Gate;
-
-
+use App\Services\ActivityLogger;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -19,7 +18,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(ActivityLogger::class);
     }
 
     /**

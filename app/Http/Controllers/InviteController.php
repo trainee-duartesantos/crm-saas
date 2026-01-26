@@ -36,6 +36,17 @@ class InviteController extends Controller
 
         $tenant = app('tenant');
 
+        // 🚫 Já existe user no tenant
+        if (
+            User::where('tenant_id', $tenant->id)
+                ->where('email', $validated['email'])
+                ->exists()
+        ) {
+            return back()->withErrors([
+                'email' => 'This user already belongs to this workspace.',
+            ]);
+        }
+
         /** @var UserInvite $invite */
         $invite = DB::transaction(function () use ($validated, $tenant) {
             return UserInvite::updateOrCreate(
@@ -60,4 +71,23 @@ class InviteController extends Controller
             ->route('users.index')
             ->with('success', 'Invitation sent successfully.');
     }
+
+    public function resend(UserInvite $invite)
+    {
+        $this->authorize('create', UserInvite::class);
+
+        Mail::to($invite->email)->send(new UserInviteMail($invite));
+
+        return back()->with('success', 'Invitation resent.');
+    }
+
+    public function destroy(UserInvite $invite)
+    {
+        $this->authorize('delete', $invite);
+
+        $invite->delete();
+
+        return back()->with('success', 'Invitation cancelled.');
+    }
+
 }

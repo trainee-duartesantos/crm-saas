@@ -16,15 +16,15 @@ class InviteAcceptController extends Controller
     {
         $invite = UserInvite::where('token', $token)->firstOrFail();
 
-        if ($invite->isExpired() || $invite->isAccepted()) {
-            abort(403, 'Invitation is invalid or expired.');
-        }
+        abort_if($invite->isExpired(), 410);
+        abort_if($invite->isAccepted(), 403);
 
         return Inertia::render('auth/AcceptInvite', [
             'email' => $invite->email,
             'token' => $invite->token,
         ]);
     }
+
 
     public function store(Request $request)
     {
@@ -36,9 +36,8 @@ class InviteAcceptController extends Controller
 
         $invite = UserInvite::where('token', $validated['token'])->firstOrFail();
 
-        if ($invite->isExpired() || $invite->isAccepted()) {
-            abort(403, 'Invitation is invalid or expired.');
-        }
+        abort_if($invite->isExpired(), 410);
+        abort_if($invite->isAccepted(), 403);
 
         DB::transaction(function () use ($invite, $validated) {
             $user = User::create([

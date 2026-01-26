@@ -34,5 +34,12 @@ class UserInvite extends Model
     {
         return ! is_null($this->accepted_at);
     }
+
+    public function scopePending($query)
+    {
+        return $query->whereNull('accepted_at')
+                    ->where('expires_at', '>', now());
+    }
+
 }
 

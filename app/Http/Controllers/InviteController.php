@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\UserInvite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
+use App\Mail\UserInviteMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -30,13 +31,14 @@ class InviteController extends Controller
 
         $validated = $request->validate([
             'email' => ['required', 'email'],
-            'role' => ['required', 'in:user,admin'],
+            'role'  => ['required', 'in:user,admin'],
         ]);
 
         $tenant = app('tenant');
 
-        DB::transaction(function () use ($validated, $tenant) {
-            UserInvite::updateOrCreate(
+        /** @var UserInvite $invite */
+        $invite = DB::transaction(function () use ($validated, $tenant) {
+            return UserInvite::updateOrCreate(
                 [
                     'tenant_id' => $tenant->id,
                     'email' => $validated['email'],
@@ -49,6 +51,10 @@ class InviteController extends Controller
                 ]
             );
         });
+
+        Mail::to($invite->email)->send(
+            new UserInviteMail($invite)
+        );
 
         return redirect()
             ->route('users.index')

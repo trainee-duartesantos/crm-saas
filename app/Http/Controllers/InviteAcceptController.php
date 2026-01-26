@@ -2,7 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\UserInvite;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class InviteAcceptController extends Controller
 {
@@ -10,31 +16,46 @@ class InviteAcceptController extends Controller
     {
         $invite = UserInvite::where('token', $token)->firstOrFail();
 
-        abort_if($invite->isExpired(), 403);
+        if ($invite->isExpired() || $invite->isAccepted()) {
+            abort(403, 'Invitation is invalid or expired.');
+        }
 
-        return Inertia::render('Auth/AcceptInvite', [
+        return Inertia::render('auth/AcceptInvite', [
             'email' => $invite->email,
-            'token' => $token,
+            'token' => $invite->token,
         ]);
     }
 
     public function store(Request $request)
     {
-        $invite = UserInvite::where('token', $request->token)->firstOrFail();
-
-        abort_if($invite->isExpired(), 403);
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $invite->email,
-            'password' => Hash::make($request->password),
-            'tenant_id' => $invite->tenant_id,
-            'role' => $invite->role,
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'confirmed', 'min:8'],
+            'token' => ['required'],
         ]);
 
-        $invite->delete();
+        $invite = UserInvite::where('token', $validated['token'])->firstOrFail();
 
-        Auth::login($user);
+        if ($invite->isExpired() || $invite->isAccepted()) {
+            abort(403, 'Invitation is invalid or expired.');
+        }
+
+        DB::transaction(function () use ($invite, $validated) {
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $invite->email,
+                'password' => Hash::make($validated['password']),
+                'role' => $invite->role,
+                'tenant_id' => $invite->tenant_id,
+                'email_verified_at' => now(),
+            ]);
+
+            $invite->update([
+                'accepted_at' => now(),
+            ]);
+
+            Auth::login($user);
+        });
 
         return redirect()->route('dashboard');
     }

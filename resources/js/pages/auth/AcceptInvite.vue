@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 
-defineProps<{
+const props = defineProps<{
     email: string;
     token: string;
 }>();
@@ -10,15 +10,15 @@ const form = useForm({
     name: '',
     password: '',
     password_confirmation: '',
-    token: '',
+    token: props.token,
 });
 </script>
 
 <template>
-    <Head title="Accept Invitation" />
+    <Head title="Accept invitation" />
 
     <div class="flex min-h-screen items-center justify-center bg-gray-50">
-        <div class="w-full max-w-md rounded-lg bg-white p-6 shadow">
+        <div class="w-full max-w-md rounded bg-white p-6 shadow">
             <h1 class="mb-2 text-xl font-semibold">🎉 Accept invitation</h1>
 
             <p class="mb-6 text-sm text-gray-600">
@@ -26,17 +26,13 @@ const form = useForm({
             </p>
 
             <form
-                @submit.prevent="
-                    form.token = token;
-                    form.post(route('invites.accept.store'));
-                "
+                @submit.prevent="form.post('/invites/accept')"
                 class="space-y-4"
             >
                 <div>
                     <label class="block text-sm font-medium">Name</label>
                     <input
                         v-model="form.name"
-                        type="text"
                         class="w-full rounded border px-3 py-2"
                         required
                     />
@@ -65,15 +61,14 @@ const form = useForm({
                 </div>
 
                 <div v-if="form.errors" class="text-sm text-red-600">
-                    <div v-for="error in form.errors" :key="error">
+                    <div v-for="(error, key) in form.errors" :key="key">
                         {{ error }}
                     </div>
                 </div>
 
                 <button
-                    type="submit"
+                    class="w-full rounded bg-black py-2 text-white"
                     :disabled="form.processing"
-                    class="w-full rounded bg-black py-2 text-white hover:bg-gray-800"
                 >
                     Accept invitation
                 </button>

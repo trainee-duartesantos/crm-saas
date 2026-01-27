@@ -8,6 +8,10 @@ defineProps<{
 const askAI = () => {
     router.post('/ai/suggest/invite-follow-up');
 };
+
+const summarizeTimeline = () => {
+    router.post('/ai/summarize/timeline');
+};
 </script>
 
 <template>
@@ -19,6 +23,12 @@ const askAI = () => {
             🤖 Ask AI for suggestion
         </button>
 
+        <button
+            @click="summarizeTimeline"
+            class="mb-6 rounded bg-indigo-600 px-4 py-2 text-white"
+        >
+            🤖 Summarize last 30 days
+        </button>
         <div
             v-for="item in items"
             :key="item.id"

@@ -46,6 +46,10 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::post('/ai/suggest/invite-follow-up', [AIController::class, 'suggestInviteFollowUp'])
         ->name('ai.suggest.invite');
+
+    Route::post('/ai/summarize/timeline', [AIController::class, 'summarizeTimeline'])
+        ->name('ai.timeline.summary');
+
 });
 
 Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])

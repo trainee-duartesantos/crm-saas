@@ -146,6 +146,7 @@ onMounted(() => {
             {{ metrics.last_activity_at ?? 'No activity yet' }}
         </div>
 
+        <!-- AI INSIGHT -->
         <div class="rounded-lg border border-indigo-300 bg-indigo-50 p-6">
             <div class="mb-2 flex items-center justify-between">
                 <div
@@ -173,6 +174,7 @@ onMounted(() => {
                 </span>
             </div>
 
+            <!-- 🧠 Explain WHY -->
             <p
                 v-if="lastInsight"
                 class="mt-3 text-sm leading-relaxed text-indigo-800"
@@ -184,18 +186,26 @@ onMounted(() => {
                 No executive insight generated yet.
             </p>
 
-            <div class="mt-4 flex gap-3">
+            <!-- 🎯 What should I do next -->
+            <div class="mt-4 flex flex-wrap gap-3">
                 <button
-                    @click="generateInsight"
-                    class="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                    @click="router.post('/ai/tenant/insight')"
+                    class="rounded bg-indigo-600 px-4 py-2 text-white"
                 >
                     Generate insight
                 </button>
 
                 <button
+                    @click="router.post('/ai/tenant/next-action')"
+                    class="rounded bg-emerald-600 px-4 py-2 text-white"
+                >
+                    🤖 What should I do next?
+                </button>
+
+                <button
                     v-if="lastInsight"
                     @click="copyInsight"
-                    class="rounded bg-green-700 px-4 py-2 text-white hover:bg-green-800"
+                    class="rounded bg-gray-200 px-4 py-2 text-sm hover:bg-white"
                 >
                     Copy insight
                 </button>

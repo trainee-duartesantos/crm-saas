@@ -62,6 +62,13 @@ class TenantInsightsController extends Controller
             ->latest()
             ->first();
 
+        $recentInsights = ActivityLog::query()
+            ->where('tenant_id', $tenant->id)
+            ->where('action', 'ai.tenant.insight')
+            ->latest()
+            ->limit(3)
+            ->get();
+
         // 🚦 Engagement score simples e defensável
         $engagementScore = match (true) {
             $invitesPending > 5 => 'low',

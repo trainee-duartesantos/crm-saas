@@ -85,4 +85,18 @@ PROMPT;
             . "Improving follow-up communication and onboarding clarity could positively impact adoption.";
     }
 
+    public function generateTenantInsight(array $metrics): string
+    {
+        return match (true) {
+            $metrics['invites_pending'] > 5 =>
+                'Engagement appears low due to several pending invitations older than one week, which may indicate onboarding friction.',
+
+            $metrics['ai_events_total'] > 5 =>
+                'The tenant shows active usage of AI features, suggesting strong engagement with the platform.',
+
+            default =>
+                'The tenant demonstrates stable activity with no critical risks detected.',
+        };
+    }
+
 }

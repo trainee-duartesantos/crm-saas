@@ -180,4 +180,42 @@ class AIController extends Controller
         return back();
     }
 
+    public function recommendNextAction(
+        AIService $ai,
+        ActivityLogger $logger
+    ) {
+        $this->authorize('viewAny', ActivityLog::class);
+
+        $tenant = app('tenant');
+
+        // 🔍 Métricas simples para decisão
+        $invitesPending = UserInvite::query()
+            ->where('tenant_id', $tenant->id)
+            ->whereNull('accepted_at')
+            ->count();
+
+        $aiEvents = ActivityLog::query()
+            ->where('tenant_id', $tenant->id)
+            ->where('action', 'like', 'ai.%')
+            ->count();
+
+        // 🧠 AI decide próxima ação
+        $message = $ai->generateTenantInsight([
+            'invites_pending' => $invitesPending,
+            'ai_events_total' => $aiEvents,
+        ]);
+
+        // 📝 Guardar na timeline
+        $logger->log(
+            action: 'ai.recommendation.next_action',
+            metadata: [
+                'message' => $message,
+                'invites_pending' => $invitesPending,
+                'ai_events_total' => $aiEvents,
+            ]
+        );
+
+        return back();
+    }
+
 }

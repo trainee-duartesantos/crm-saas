@@ -9,6 +9,7 @@ use App\Http\Controllers\InviteAcceptController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\AIController;
+use App\Http\Controllers\TenantInsightsController;
 
 
 Route::get('/', function () {
@@ -55,6 +56,12 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::post('/ai/draft/follow-up', [AIController::class, 'draftInviteFollowUp'])
         ->name('ai.draft.followup');
+
+    Route::get('/insights', [TenantInsightsController::class, 'index'])
+        ->name('insights.index');
+
+    Route::post('/ai/tenant/insight', [AIController::class, 'generateTenantInsight'])
+        ->name('ai.tenant.insight');
 
 });
 

@@ -133,4 +133,51 @@ class AIController extends Controller
 
         return back();
     }
+
+    public function generateTenantInsight(
+        AIService $ai,
+        ActivityLogger $logger
+    ) {
+        $this->authorize('viewAny', ActivityLog::class);
+
+        $tenant = app('tenant');
+
+        // 📊 Métricas reais
+        $metrics = [
+            'invites_total' => \App\Models\UserInvite::where('tenant_id', $tenant->id)->count(),
+            'invites_accepted' => \App\Models\UserInvite::where('tenant_id', $tenant->id)
+                ->whereNotNull('accepted_at')
+                ->count(),
+            'invites_pending' => \App\Models\UserInvite::where('tenant_id', $tenant->id)
+                ->whereNull('accepted_at')
+                ->count(),
+            'activity_last_7_days' => ActivityLog::where('tenant_id', $tenant->id)
+                ->where('created_at', '>=', now()->subDays(7))
+                ->count(),
+        ];
+
+        // 🧠 Contexto para a AI
+        $context = <<<TEXT
+    Tenant metrics:
+    - Total invitations: {$metrics['invites_total']}
+    - Accepted invitations: {$metrics['invites_accepted']}
+    - Pending invitations: {$metrics['invites_pending']}
+    - Activities in last 7 days: {$metrics['activity_last_7_days']}
+    TEXT;
+
+        // 🤖 Insight executivo
+        $message = $ai->askExecutiveInsight($context);
+
+        // 📝 Guardar na timeline
+        $logger->log(
+            action: 'ai.tenant.insight',
+            metadata: [
+                'message' => $message,
+                'metrics' => $metrics,
+            ]
+        );
+
+        return back();
+    }
+
 }

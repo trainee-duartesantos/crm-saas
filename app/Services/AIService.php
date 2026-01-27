@@ -75,4 +75,14 @@ PROMPT;
 
         return 'No significant patterns were detected during the analyzed period.';
     }
+
+    public function askExecutiveInsight(string $context): string
+    {
+        // 🔧 Mock inteligente e defensável
+        return "Based on the current tenant metrics, invitation activity is present but engagement appears uneven. "
+            . "While some users have completed onboarding, a notable number of invitations remain pending. "
+            . "Recent activity levels suggest moderate engagement. "
+            . "Improving follow-up communication and onboarding clarity could positively impact adoption.";
+    }
+
 }

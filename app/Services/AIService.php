@@ -61,4 +61,14 @@ class AIService
         return 'No significant patterns detected during the analyzed period.';
     }
 
+    public function detectRisk(string $type, array $data = []): string
+    {
+        return match ($type) {
+            'pending_invites' =>
+                "{$data['count']} invitations have been pending for over 7 days. This may indicate low user engagement or issues with the onboarding flow. A follow-up or process review is recommended.",
+
+            default =>
+                'A potential risk was detected. Further review is recommended.',
+        };
+    }
 }

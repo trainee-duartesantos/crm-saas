@@ -12,6 +12,10 @@ const askAI = () => {
 const summarizeTimeline = () => {
     router.post('/ai/summarize/timeline');
 };
+
+const detectRisks = () => {
+    router.post('/ai/detect/risks');
+};
 </script>
 
 <template>
@@ -29,6 +33,13 @@ const summarizeTimeline = () => {
         >
             🤖 Summarize last 30 days
         </button>
+        <button
+            @click="detectRisks"
+            class="rounded bg-red-600 px-4 py-2 text-white"
+        >
+            ⚠️ Detect risks
+        </button>
+
         <div
             v-for="item in items"
             :key="item.id"

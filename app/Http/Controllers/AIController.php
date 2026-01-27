@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Services\AIService;
 use App\Services\ActivityLogger;
+use App\Models\UserInvite;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 
@@ -59,5 +60,42 @@ class AIController extends Controller
         );
 
         return back();
+    }
+
+    public function detectRisks(
+        AIService $ai,
+        ActivityLogger $logger
+    ): RedirectResponse {
+        $this->authorize('viewAny', ActivityLog::class);
+
+        $tenant = app('tenant');
+
+        // 1️⃣ Convites pendentes há mais de 7 dias
+        $pendingInvites = UserInvite::query()
+            ->where('tenant_id', $tenant->id)
+            ->whereNull('accepted_at')
+            ->where('created_at', '<=', Carbon::now()->subDays(7))
+            ->count();
+
+        if ($pendingInvites === 0) {
+            return back()->with('info', 'No risks detected.');
+        }
+
+        // 2️⃣ Pedir explicação à AI
+        $message = $ai->detectRisk('pending_invites', [
+            'count' => $pendingInvites,
+        ]);
+
+        // 3️⃣ Guardar na timeline
+        $logger->log(
+            action: 'ai.risk.detected',
+            metadata: [
+                'type' => 'pending_invites',
+                'count' => $pendingInvites,
+                'message' => $message,
+            ]
+        );
+
+        return back()->with('warning', 'Potential risks detected.');
     }
 }

@@ -50,6 +50,8 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::post('/ai/summarize/timeline', [AIController::class, 'summarizeTimeline'])
         ->name('ai.timeline.summary');
 
+    Route::post('/ai/detect/risks', [AIController::class, 'detectRisks'])
+        ->name('ai.detect.risks');
 });
 
 Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])

@@ -20,6 +20,10 @@ class UserInvite extends Model
         'accepted_at' => 'datetime',
     ];
 
+    protected $attributes = [
+        'role' => 'user',
+    ];
+
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
@@ -27,7 +31,7 @@ class UserInvite extends Model
 
     public function isExpired(): bool
     {
-        return $this->expires_at->isPast();
+        return $this->expires_at?->isPast() ?? false;
     }
 
     public function isAccepted(): bool

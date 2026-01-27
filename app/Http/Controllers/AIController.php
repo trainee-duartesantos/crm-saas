@@ -62,31 +62,29 @@ class AIController extends Controller
         return back();
     }
 
-    public function detectRisks(
-        AIService $ai,
-        ActivityLogger $logger
-    ): RedirectResponse {
+    public function detectRisks(AIService $ai, ActivityLogger $logger)
+    {
         $this->authorize('viewAny', ActivityLog::class);
 
         $tenant = app('tenant');
 
-        // 1️⃣ Convites pendentes há mais de 7 dias
+        // 🔍 Convites pendentes há mais de 7 dias
         $pendingInvites = UserInvite::query()
             ->where('tenant_id', $tenant->id)
-            ->whereNull('accepted_at')
-            ->where('created_at', '<=', Carbon::now()->subDays(7))
+            ->whereNull('accepted_at') // ajusta se usares outro campo
+            ->where('created_at', '<=', now()->subDays(7))
             ->count();
 
         if ($pendingInvites === 0) {
-            return back()->with('info', 'No risks detected.');
+            return back();
         }
 
-        // 2️⃣ Pedir explicação à AI
-        $message = $ai->detectRisk('pending_invites', [
+        // 🧠 Mensagem da AI (mock inteligente)
+        $message = $ai->suggest('invite_risk', [
             'count' => $pendingInvites,
         ]);
 
-        // 3️⃣ Guardar na timeline
+        // 📝 Registar na timeline
         $logger->log(
             action: 'ai.risk.detected',
             metadata: [
@@ -96,6 +94,43 @@ class AIController extends Controller
             ]
         );
 
-        return back()->with('warning', 'Potential risks detected.');
+        return back();
+    }
+
+    public function draftInviteFollowUp(
+        AIService $ai,
+        ActivityLogger $logger
+    ) {
+        $this->authorize('viewAny', ActivityLog::class);
+
+        $tenant = app('tenant');
+
+        // 🎯 Convite pendente mais antigo
+        $invite = UserInvite::query()
+            ->where('tenant_id', $tenant->id)
+            ->whereNull('accepted_at') // ajusta se necessário
+            ->orderBy('created_at')
+            ->first();
+
+        if (! $invite) {
+            return back();
+        }
+
+        // ✉️ Gerar email com AI
+        $email = $ai->draftEmail(
+            goal: "following up on an invitation sent to {$invite->email}"
+        );
+
+        // 📝 Guardar na timeline
+        $logger->log(
+            action: 'ai.follow_up.draft',
+            metadata: [
+                'email' => $invite->email,
+                'subject' => $email['subject'],
+                'body' => $email['body'],
+            ]
+        );
+
+        return back();
     }
 }

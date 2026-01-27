@@ -52,6 +52,10 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::post('/ai/detect/risks', [AIController::class, 'detectRisks'])
         ->name('ai.detect.risks');
+
+    Route::post('/ai/draft/follow-up', [AIController::class, 'draftInviteFollowUp'])
+        ->name('ai.draft.followup');
+
 });
 
 Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])

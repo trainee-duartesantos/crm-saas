@@ -32,6 +32,8 @@ const props = defineProps<{
         ai_events_total: number;
         last_activity_at: string | null;
     };
+    lastInsight: string | null;
+    engagementScore: 'low' | 'moderate' | 'high';
     charts: {
         activity: { labels: string[]; data: number[] };
         invites: { labels: string[]; data: number[] };
@@ -42,6 +44,11 @@ const invitesCanvas = ref<HTMLCanvasElement | null>(null);
 const activityCanvas = ref<HTMLCanvasElement | null>(null);
 const generateInsight = () => {
     router.post('/ai/tenant/insight');
+};
+
+const copyInsight = () => {
+    if (!props.lastInsight) return;
+    navigator.clipboard.writeText(props.lastInsight);
 };
 
 onMounted(() => {
@@ -140,24 +147,59 @@ onMounted(() => {
         </div>
 
         <div class="rounded-lg border border-indigo-300 bg-indigo-50 p-6">
-            <div
-                class="mb-2 flex items-center gap-2 text-lg font-semibold text-indigo-900"
-            >
-                🤖 AI Executive Insight
+            <div class="mb-2 flex items-center justify-between">
+                <div
+                    class="flex items-center gap-2 text-lg font-semibold text-indigo-900"
+                >
+                    🤖 AI Executive Insight
+                    <span
+                        class="rounded bg-indigo-600 px-2 py-0.5 text-xs text-white"
+                    >
+                        AI-generated
+                    </span>
+                </div>
+
+                <span
+                    class="rounded-full px-3 py-1 text-xs font-semibold"
+                    :class="{
+                        'bg-red-100 text-red-700': engagementScore === 'low',
+                        'bg-yellow-100 text-yellow-700':
+                            engagementScore === 'moderate',
+                        'bg-green-100 text-green-700':
+                            engagementScore === 'high',
+                    }"
+                >
+                    {{ engagementScore.toUpperCase() }} engagement
+                </span>
             </div>
 
-            <p class="text-sm text-indigo-800">
-                This section provides an AI-generated executive overview of the
-                tenant’s current activity, engagement, and onboarding
-                performance.
+            <p
+                v-if="lastInsight"
+                class="mt-3 text-sm leading-relaxed text-indigo-800"
+            >
+                {{ lastInsight }}
             </p>
 
-            <button
-                @click="generateInsight"
-                class="mt-4 rounded bg-indigo-600 px-4 py-2 text-white"
-            >
-                Generate executive insight
-            </button>
+            <p v-else class="mt-3 text-sm text-indigo-500 italic">
+                No executive insight generated yet.
+            </p>
+
+            <div class="mt-4 flex gap-3">
+                <button
+                    @click="generateInsight"
+                    class="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                >
+                    Generate insight
+                </button>
+
+                <button
+                    v-if="lastInsight"
+                    @click="copyInsight"
+                    class="rounded bg-green-700 px-4 py-2 text-white hover:bg-green-800"
+                >
+                    Copy insight
+                </button>
+            </div>
         </div>
 
         <!-- Charts -->

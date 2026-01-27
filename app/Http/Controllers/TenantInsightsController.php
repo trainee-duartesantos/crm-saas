@@ -55,6 +55,20 @@ class TenantInsightsController extends Controller
             ->latest()
             ->value('created_at');
 
+                    // 🧠 Último AI Executive Insight
+        $lastInsight = ActivityLog::query()
+            ->where('tenant_id', $tenant->id)
+            ->where('action', 'ai.tenant.insight')
+            ->latest()
+            ->first();
+
+        // 🚦 Engagement score simples e defensável
+        $engagementScore = match (true) {
+            $invitesPending > 5 => 'low',
+            $invitesPending > 2 => 'moderate',
+            default => 'high',
+        };
+
         return Inertia::render('insights/Index', [
             'metrics' => [
                 'invites_total' => $invitesTotal,
@@ -63,6 +77,8 @@ class TenantInsightsController extends Controller
                 'ai_events_total' => $aiEventsTotal,
                 'last_activity_at' => $lastActivityAt,
             ],
+            'lastInsight' => $lastInsight?->metadata['message'] ?? null,
+            'engagementScore' => $engagementScore,
             'charts' => [
                 'activity' => [
                     'labels' => $activityLabels,

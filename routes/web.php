@@ -7,6 +7,9 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\InviteAcceptController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\TimelineController;
+use App\Http\Controllers\AIController;
+
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -18,7 +21,7 @@ Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::get('/users', [UserController::class, 'index'])
         ->name('users.index');
@@ -37,6 +40,12 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])
         ->name('activity-logs.index');
+
+    Route::get('/timeline', [TimelineController::class, 'index'])
+        ->name('timeline.index');
+
+    Route::post('/ai/suggest/invite-follow-up', [AIController::class, 'suggestInviteFollowUp'])
+        ->name('ai.suggest.invite');
 });
 
 Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])

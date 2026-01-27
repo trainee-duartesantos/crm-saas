@@ -11,6 +11,8 @@ use App\Models\UserInvite;
 use App\Policies\UserInvitePolicy;
 use Illuminate\Support\Facades\Gate;
 use App\Services\ActivityLogger;
+use App\Services\AIService;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(ActivityLogger::class);
+        $this->app->singleton(AIService::class);
     }
 
     /**

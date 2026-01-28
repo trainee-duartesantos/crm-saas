@@ -22,7 +22,7 @@ class Deal extends Model
 
     public const STATUSES = [
         'lead',
-        'contacted',
+        'qualified',
         'proposal',
         'won',
         'lost',
@@ -31,6 +31,11 @@ class Deal extends Model
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    public function entity()
+    {
+        return $this->belongsTo(Entity::class);
     }
 
     public function person()

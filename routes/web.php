@@ -11,6 +11,7 @@ use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\AIController;
 use App\Http\Controllers\TenantInsightsController;
 use App\Http\Controllers\PersonController;
+use App\Http\Controllers\DealController;
 
 
 Route::get('/', function () {
@@ -72,6 +73,15 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::post('/people', [PersonController::class, 'store'])
         ->name('people.store');
+
+    Route::get('/deals', [DealController::class, 'index'])
+        ->name('deals.index');
+
+    Route::post('/deals', [DealController::class, 'store'])
+        ->name('deals.store');
+
+    Route::post('/deals/{deal}/move', [DealController::class, 'move'])
+        ->name('deals.move');
 });
 
 Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])

@@ -13,6 +13,7 @@ use App\Http\Controllers\TenantInsightsController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\DealController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\EntityController;
 
 
 Route::get('/', function () {
@@ -94,6 +95,8 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     );
 
     Route::post('/ai/send-follow-up/{activity}', [AIController::class, 'sendFollowUp']);
+
+    Route::resource('entities', EntityController::class);
 });
 
 Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])

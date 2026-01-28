@@ -18,6 +18,34 @@ class ActivityController extends Controller
 
         $tenantId = app('tenant')->id;
 
+        $today = now()->startOfDay();
+        $tomorrow = now()->endOfDay();
+
+        $activitiesToday = Activity::query()
+            ->where('tenant_id', $tenantId)
+            ->whereNull('completed_at')
+            ->whereBetween('due_at', [$today, $tomorrow])
+            ->with(['person', 'deal'])
+            ->orderBy('due_at')
+            ->get();
+
+        $activitiesOverdue = Activity::query()
+            ->where('tenant_id', $tenantId)
+            ->whereNull('completed_at')
+            ->where('due_at', '<', $today)
+            ->with(['person', 'deal'])
+            ->orderBy('due_at')
+            ->get();
+
+        $activitiesUpcoming = Activity::query()
+            ->where('tenant_id', $tenantId)
+            ->whereNull('completed_at')
+            ->where('due_at', '>', $tomorrow)
+            ->with(['person', 'deal'])
+            ->orderBy('due_at')
+            ->limit(20)
+            ->get();
+
         $activities = Activity::query()
             ->where('tenant_id', $tenantId)
             ->with(['person', 'deal'])
@@ -41,6 +69,11 @@ class ActivityController extends Controller
             'activities' => $activities,
             'people' => $people,
             'deals' => $deals,
+            'calendar' => [
+                'today' => $activitiesToday,
+                'overdue' => $activitiesOverdue,
+                'upcoming' => $activitiesUpcoming,
+            ],
         ]);
     }
 

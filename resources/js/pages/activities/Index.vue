@@ -6,6 +6,11 @@ const props = defineProps<{
     activities: any[];
     people: { id: number; first_name: string; last_name: string }[];
     deals: { id: number; title: string; status: string }[];
+    calendar: {
+        today: any[];
+        overdue: any[];
+        upcoming: any[];
+    };
 }>();
 
 const form = ref({
@@ -60,6 +65,89 @@ const done = computed(() => props.activities.filter((a) => a.completed_at));
                     class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
                     >People</a
                 >
+            </div>
+        </div>
+        <!-- Calendar overview -->
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <!-- Overdue -->
+            <div class="rounded-lg border border-red-300 bg-red-50 p-4">
+                <div class="mb-2 font-semibold text-red-700">⏰ Overdue</div>
+
+                <div
+                    v-if="calendar.overdue.length === 0"
+                    class="text-sm text-red-600"
+                >
+                    No overdue activities 🎉
+                </div>
+
+                <div v-else class="space-y-2">
+                    <div
+                        v-for="a in calendar.overdue"
+                        :key="a.id"
+                        class="rounded border bg-white p-3"
+                    >
+                        <div class="text-sm font-semibold">
+                            {{ a.title }}
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            Due {{ a.due_at }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today -->
+            <div class="rounded-lg border border-indigo-300 bg-indigo-50 p-4">
+                <div class="mb-2 font-semibold text-indigo-700">📅 Today</div>
+
+                <div
+                    v-if="calendar.today.length === 0"
+                    class="text-sm text-indigo-600"
+                >
+                    Nothing scheduled today
+                </div>
+
+                <div v-else class="space-y-2">
+                    <div
+                        v-for="a in calendar.today"
+                        :key="a.id"
+                        class="rounded border bg-white p-3"
+                    >
+                        <div class="text-sm font-semibold">
+                            {{ a.title }}
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            {{ a.type }} • {{ a.due_at }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming -->
+            <div class="rounded-lg border bg-white p-4">
+                <div class="mb-2 font-semibold text-gray-700">🔮 Upcoming</div>
+
+                <div
+                    v-if="calendar.upcoming.length === 0"
+                    class="text-sm text-gray-500"
+                >
+                    No upcoming activities
+                </div>
+
+                <div v-else class="space-y-2">
+                    <div
+                        v-for="a in calendar.upcoming"
+                        :key="a.id"
+                        class="rounded border p-3"
+                    >
+                        <div class="text-sm font-semibold">
+                            {{ a.title }}
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            Due {{ a.due_at }}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -159,6 +247,13 @@ const done = computed(() => props.activities.filter((a) => a.completed_at));
                 </div>
             </div>
         </div>
+
+        <button
+            @click="router.post('/ai/activities/follow-ups')"
+            class="rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white"
+        >
+            🤖 Suggest follow-ups
+        </button>
 
         <!-- Pending -->
         <div class="rounded-lg border bg-white p-5">

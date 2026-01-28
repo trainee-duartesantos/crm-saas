@@ -84,14 +84,15 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::post('/deals/{deal}/move', [DealController::class, 'move'])
         ->name('deals.move');
 
-    Route::get('/activities', [ActivityController::class, 'index'])
-        ->name('activities.index');
+    Route::get('/activities', [ActivityController::class, 'index']);
+    Route::post('/activities', [ActivityController::class, 'store']);
+    Route::post('/activities/{activity}/complete', [ActivityController::class, 'complete']);
 
-    Route::post('/activities', [ActivityController::class, 'store'])
-        ->name('activities.store');
-        
-    Route::post('/activities/{activity}/complete', [ActivityController::class, 'complete'])
-        ->name('activities.complete');
+    Route::post(
+        '/ai/activities/follow-ups',
+        [AIController::class, 'detectActivityFollowUps']
+    );
+
 });
 
 Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])

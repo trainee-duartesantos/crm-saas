@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activity;
 use App\Models\ActivityLog;
 use App\Services\AIService;
 use App\Services\ActivityLogger;
@@ -214,6 +215,46 @@ class AIController extends Controller
                 'ai_events_total' => $aiEvents,
             ]
         );
+
+        return back();
+    }
+
+    public function detectActivityFollowUps(
+        AIService $ai,
+        ActivityLogger $logger
+    ) {
+        $this->authorize('viewAny', ActivityLog::class);
+
+        $tenantId = app('tenant')->id;
+
+        $overdueActivities = Activity::query()
+            ->where('tenant_id', $tenantId)
+            ->whereNull('completed_at')
+            ->whereNotNull('due_at')
+            ->where('due_at', '<', now()->subDay())
+            ->with(['person', 'deal'])
+            ->limit(5)
+            ->get();
+
+        if ($overdueActivities->isEmpty()) {
+            return back();
+        }
+
+        foreach ($overdueActivities as $activity) {
+            $suggestion = $ai->suggest('activity_follow_up', [
+                'title' => $activity->title,
+                'type' => $activity->type,
+            ]);
+
+            $logger->log(
+                action: 'ai.follow_up.suggested',
+                metadata: [
+                    'activity_id' => $activity->id,
+                    'activity_title' => $activity->title,
+                    'suggestion' => $suggestion,
+                ]
+            );
+        }
 
         return back();
     }

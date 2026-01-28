@@ -22,6 +22,10 @@ class AIService
                 . "This may indicate onboarding friction or low engagement. "
                 . "A follow-up or onboarding review is recommended.",
 
+            'activity_follow_up' =>
+                "The activity '{$data['title']}' is overdue. "
+                . "Consider reaching out via {$data['type']} to maintain momentum.",
+
             // 🧠 Fallback
             default =>
                 'Review this situation and decide on the next appropriate action.',

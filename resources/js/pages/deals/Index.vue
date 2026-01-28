@@ -15,12 +15,28 @@ const moveDeal = (dealId: number, status: string) => {
     <div class="mx-auto max-w-7xl space-y-6">
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-semibold">Pipeline</h1>
-            <a
-                href="/timeline"
-                class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
-            >
-                ← Back to Timeline
-            </a>
+            <div class="flex gap-2">
+                <a
+                    href="/timeline"
+                    class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
+                    >Timeline</a
+                >
+                <a
+                    href="/insights"
+                    class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
+                    >Insights</a
+                >
+                <a
+                    href="/people"
+                    class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
+                    >People</a
+                >
+                <a
+                    href="/activities"
+                    class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
+                    >Activities</a
+                >
+            </div>
         </div>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-5">
             <div

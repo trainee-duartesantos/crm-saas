@@ -9,6 +9,8 @@ use App\Services\ActivityLogger;
 use App\Models\UserInvite;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
+use App\Mail\FollowUpMail;
+use Illuminate\Support\Facades\Mail;
 
 class AIController extends Controller
 {
@@ -259,4 +261,36 @@ class AIController extends Controller
         return back();
     }
 
+    public function sendFollowUp(
+        Activity $activity,
+        AIService $ai,
+        ActivityLogger $logger
+    ) {
+        $this->authorize('viewAny', ActivityLog::class);
+
+        if (! $activity->person?->email) {
+            return back();
+        }
+
+        $email = $ai->draftEmail(
+            goal: "following up on '{$activity->title}'"
+        );
+
+        Mail::to($activity->person->email)
+            ->send(new FollowUpMail(
+                $email['subject'],
+                $email['body']
+            ));
+
+        $logger->log(
+            action: 'email.follow_up.sent',
+            metadata: [
+                'activity_id' => $activity->id,
+                'to' => $activity->person->email,
+                'subject' => $email['subject'],
+            ]
+        );
+
+        return back();
+    }
 }

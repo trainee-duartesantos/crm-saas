@@ -93,6 +93,7 @@ Route::middleware(['auth', 'tenant'])->group(function () {
         [AIController::class, 'detectActivityFollowUps']
     );
 
+    Route::post('/ai/send-follow-up/{activity}', [AIController::class, 'sendFollowUp']);
 });
 
 Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])

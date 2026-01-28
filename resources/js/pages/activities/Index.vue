@@ -307,6 +307,14 @@ const done = computed(() => props.activities.filter((a) => a.completed_at));
                         </div>
 
                         <button
+                            v-if="a.person?.email"
+                            @click="router.post(`/ai/send-follow-up/${a.id}`)"
+                            class="rounded border px-3 py-1 text-xs hover:bg-gray-50"
+                        >
+                            ✉️ Send follow-up
+                        </button>
+
+                        <button
                             @click="complete(a.id)"
                             class="rounded bg-emerald-600 px-3 py-2 text-sm text-white"
                         >

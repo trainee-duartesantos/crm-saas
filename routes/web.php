@@ -10,6 +10,7 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\AIController;
 use App\Http\Controllers\TenantInsightsController;
+use App\Http\Controllers\PersonController;
 
 
 Route::get('/', function () {
@@ -65,6 +66,12 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::post('/ai/tenant/next-action', [AIController::class, 'recommendNextAction'])
         ->name('ai.tenant.next-action');
+
+    Route::get('/people', [PersonController::class, 'index'])
+        ->name('people.index');
+
+    Route::post('/people', [PersonController::class, 'store'])
+        ->name('people.store');
 });
 
 Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Heading from '@/components/Heading.vue';
 import { router } from '@inertiajs/vue3';
 
 type TimelineItem = {
@@ -8,7 +9,7 @@ type TimelineItem = {
     metadata?: any;
 };
 
-const props = defineProps<{
+defineProps<{
     items: TimelineItem[];
 }>();
 
@@ -18,7 +19,7 @@ const run = (url: string) => {
 
 const isAI = (action: string) => action?.startsWith('ai.');
 
-const badge = (action: string) => {
+const badgeLabel = (action: string) => {
     if (action === 'ai.timeline.summary') return 'Summary';
     if (action === 'ai.risk.detected') return 'Risk';
     if (action === 'ai.follow_up.draft') return 'Draft';
@@ -28,11 +29,13 @@ const badge = (action: string) => {
 
 const cardClasses = (action: string) => {
     if (!isAI(action)) return 'border-gray-200 bg-white';
+
     if (action === 'ai.risk.detected') return 'border-red-200 bg-red-50';
     if (action === 'ai.follow_up.draft')
         return 'border-emerald-200 bg-emerald-50';
     if (action === 'ai.timeline.summary')
         return 'border-indigo-200 bg-indigo-50';
+
     return 'border-blue-200 bg-blue-50';
 };
 
@@ -40,46 +43,50 @@ const badgeClasses = (action: string) => {
     if (action === 'ai.risk.detected') return 'bg-red-600 text-white';
     if (action === 'ai.follow_up.draft') return 'bg-emerald-600 text-white';
     if (action === 'ai.timeline.summary') return 'bg-indigo-600 text-white';
+
     return 'bg-blue-600 text-white';
 };
 </script>
 
 <template>
     <div class="mx-auto max-w-4xl space-y-6">
-        <div class="flex items-center justify-between">
-            <h1 class="text-2xl font-semibold">Timeline</h1>
+        <Heading
+            title="Timeline"
+            description="System and AI activity history"
+        />
 
-            <div class="flex flex-wrap gap-2">
-                <button
-                    @click="run('/ai/suggest/invite-follow-up')"
-                    class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                >
-                    🤖 Suggest
-                </button>
+        <!-- AI actions -->
+        <div class="flex flex-wrap gap-2">
+            <button
+                @click="run('/ai/suggest/invite-follow-up')"
+                class="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+                🤖 Suggest
+            </button>
 
-                <button
-                    @click="run('/ai/summarize/timeline')"
-                    class="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
-                >
-                    🧾 Summary (30d)
-                </button>
+            <button
+                @click="run('/ai/summarize/timeline')"
+                class="rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+            >
+                🧾 Summary (30d)
+            </button>
 
-                <button
-                    @click="run('/ai/detect/risks')"
-                    class="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-                >
-                    ⚠️ Risks
-                </button>
+            <button
+                @click="run('/ai/detect/risks')"
+                class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+            >
+                ⚠️ Risks
+            </button>
 
-                <button
-                    @click="run('/ai/draft/follow-up')"
-                    class="rounded bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700"
-                >
-                    ✉️ Draft email
-                </button>
-            </div>
+            <button
+                @click="run('/ai/draft/follow-up')"
+                class="rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+            >
+                ✉️ Draft email
+            </button>
         </div>
 
+        <!-- Timeline items -->
         <div class="space-y-4">
             <div
                 v-for="item in items"
@@ -89,7 +96,7 @@ const badgeClasses = (action: string) => {
             >
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <div class="text-sm text-gray-500">
+                        <div class="text-xs text-gray-500">
                             {{ item.created_at }}
                         </div>
 
@@ -99,58 +106,71 @@ const badgeClasses = (action: string) => {
                                 class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
                                 :class="badgeClasses(item.action)"
                             >
-                                {{ badge(item.action) }}
+                                {{ badgeLabel(item.action) }}
                             </span>
 
-                            <div class="font-semibold">
+                            <div class="font-semibold text-gray-900">
                                 {{ item.action }}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ✅ Email draft render bonito -->
+                <!-- AI follow-up draft -->
                 <div
                     v-if="item.action === 'ai.follow_up.draft'"
-                    class="mt-3 space-y-2"
+                    class="mt-3 space-y-3"
                 >
-                    <div class="text-sm">
-                        <div class="font-semibold text-gray-700">To</div>
-                        <div class="text-gray-900">
+                    <div>
+                        <div class="text-xs font-semibold text-gray-600">
+                            To
+                        </div>
+                        <div class="text-sm text-gray-900">
                             {{ item.metadata?.email }}
                         </div>
                     </div>
 
-                    <div class="text-sm">
-                        <div class="font-semibold text-gray-700">Subject</div>
-                        <div class="text-gray-900">
+                    <div>
+                        <div class="text-xs font-semibold text-gray-600">
+                            Subject
+                        </div>
+                        <div class="text-sm text-gray-900">
                             {{ item.metadata?.subject }}
                         </div>
                     </div>
 
-                    <div class="text-sm">
-                        <div class="font-semibold text-gray-700">Body</div>
+                    <div>
+                        <div class="text-xs font-semibold text-gray-600">
+                            Body
+                        </div>
                         <pre
-                            class="mt-1 rounded bg-white/60 p-3 text-sm whitespace-pre-wrap text-gray-900"
+                            class="mt-1 rounded bg-white/70 p-3 text-sm whitespace-pre-wrap text-gray-900"
                             >{{ item.metadata?.body }}</pre
                         >
                     </div>
                 </div>
 
-                <!-- ✅ Mensagens AI normais -->
+                <!-- Generic AI message -->
                 <div
                     v-else-if="item.metadata?.message"
-                    class="mt-3 text-gray-900"
+                    class="mt-3 text-sm text-gray-900"
                 >
                     {{ item.metadata.message }}
                 </div>
 
-                <!-- fallback -->
+                <!-- Fallback -->
                 <pre
-                    v-else
-                    class="mt-3 rounded bg-white/60 p-3 text-xs text-gray-800"
+                    v-else-if="item.metadata"
+                    class="mt-3 rounded bg-white/70 p-3 text-xs text-gray-800"
                     >{{ JSON.stringify(item.metadata, null, 2) }}</pre
                 >
+            </div>
+
+            <div
+                v-if="items.length === 0"
+                class="rounded border border-dashed p-6 text-center text-sm text-gray-500"
+            >
+                No timeline activity yet.
             </div>
         </div>
     </div>

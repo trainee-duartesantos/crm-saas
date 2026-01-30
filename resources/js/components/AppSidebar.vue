@@ -11,7 +11,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import {
@@ -24,61 +23,47 @@ import {
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
-/* 👇 role vem do layout */
-const props = defineProps<{
+defineProps<{
     role: 'user' | 'admin' | 'owner';
 }>();
 
-/* Base: todos veem */
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard(),
+        href: '/dashboard',
         icon: LayoutGrid,
     },
-];
-
-/* Admin + Owner */
-if (props.role === 'admin' || props.role === 'owner') {
-    mainNavItems.push(
-        {
-            title: 'Users',
-            href: '/users',
-            icon: Users,
-        },
-        {
-            title: 'Projects',
-            href: '/projects',
-            icon: Folder,
-        },
-    );
-}
-
-/* Só Owner */
-if (props.role === 'owner') {
-    mainNavItems.push(
-        {
-            title: 'Tenant',
-            href: '/tenant',
-            icon: Building,
-        },
-        {
-            title: 'Billing',
-            href: '/billing',
-            icon: CreditCard,
-        },
-    );
-}
-
-const footerNavItems: NavItem[] = [
     {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
+        title: 'Timeline',
+        href: '/timeline',
+        icon: BookOpen,
+    },
+    {
+        title: 'Deals',
+        href: '/deals',
+        icon: CreditCard,
+    },
+    {
+        title: 'Activities',
+        href: '/activities',
         icon: Folder,
     },
     {
+        title: 'People',
+        href: '/people',
+        icon: Users,
+    },
+    {
+        title: 'Entities',
+        href: '/entities',
+        icon: Building,
+    },
+];
+
+const footerNavItems: NavItem[] = [
+    {
         title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
+        href: 'https://laravel.com/docs',
         icon: BookOpen,
     },
 ];
@@ -90,7 +75,7 @@ const footerNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboard()">
+                        <Link href="/dashboard">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>

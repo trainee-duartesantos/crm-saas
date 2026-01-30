@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
+import Heading from '@/components/Heading.vue';
 
 defineProps<{
     statuses: string[];
@@ -12,24 +13,11 @@ const moveDeal = (dealId: number, status: string) => {
 </script>
 
 <template>
-    <div class="mx-auto max-w-7xl space-y-6">
-        <div class="flex items-center justify-between">
-            <h1 class="text-2xl font-semibold">Pipeline</h1>
-            <div class="flex gap-2">
-                <a href="/timeline" class="rounded border px-3 py-2 text-sm"
-                    >Timeline</a
-                >
-                <a href="/insights" class="rounded border px-3 py-2 text-sm"
-                    >Insights</a
-                >
-                <a href="/people" class="rounded border px-3 py-2 text-sm"
-                    >People</a
-                >
-                <a href="/activities" class="rounded border px-3 py-2 text-sm"
-                    >Activities</a
-                >
-            </div>
-        </div>
+    <div class="mx-auto max-w-6xl space-y-6">
+        <Heading
+            title="Deals pipeline"
+            description="Track and move deals across stages"
+        />
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-5">
             <div
@@ -37,7 +25,7 @@ const moveDeal = (dealId: number, status: string) => {
                 :key="status"
                 class="rounded-lg border bg-gray-50 p-3"
             >
-                <h2 class="mb-3 text-sm font-semibold text-gray-600 uppercase">
+                <h2 class="mb-3 text-sm font-semibold uppercase text-gray-600">
                     {{ status }}
                 </h2>
 
@@ -74,7 +62,7 @@ const moveDeal = (dealId: number, status: string) => {
 
                     <div
                         v-if="!deals[status]?.length"
-                        class="text-xs text-gray-400 italic"
+                        class="text-xs italic text-gray-400"
                     >
                         No deals
                     </div>

@@ -7,10 +7,11 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
-import { type NavItem } from '@/types';
+import type { NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 
 defineProps<{
+    label: string;
     items: NavItem[];
 }>();
 
@@ -18,8 +19,9 @@ const { isCurrentUrl } = useCurrentUrl();
 </script>
 
 <template>
-    <SidebarGroup class="px-2 py-0">
-        <SidebarGroupLabel>Platform</SidebarGroupLabel>
+    <SidebarGroup class="px-2 py-1">
+        <SidebarGroupLabel>{{ label }}</SidebarGroupLabel>
+
         <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
                 <SidebarMenuButton
@@ -28,7 +30,7 @@ const { isCurrentUrl } = useCurrentUrl();
                     :tooltip="item.title"
                 >
                     <Link :href="item.href">
-                        <component :is="item.icon" />
+                        <component :is="item.icon" class="h-4 w-4" />
                         <span>{{ item.title }}</span>
                     </Link>
                 </SidebarMenuButton>

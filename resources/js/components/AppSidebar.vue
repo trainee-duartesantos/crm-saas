@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
@@ -13,75 +12,61 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import AppLogo from './AppLogo.vue';
 
 import {
-    Activity,
-    BarChart3,
-    Brain,
     Briefcase,
     Building2,
-    CalendarCheck,
+    CheckSquare,
+    Clock,
+    CreditCard,
     LayoutGrid,
+    Shield,
+    Sparkles,
     Users,
 } from 'lucide-vue-next';
 
-/* role vem do layout */
-defineProps<{
+import AppLogo from './AppLogo.vue';
+
+const props = defineProps<{
     role: 'user' | 'admin' | 'owner';
 }>();
 
-/* -----------------------
-   MAIN NAV (produto real)
-------------------------*/
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Timeline',
-        href: '/timeline',
-        icon: Activity,
-    },
-    {
-        title: 'Activities',
-        href: '/activities',
-        icon: CalendarCheck,
-    },
-    {
-        title: 'Deals',
-        href: '/deals',
-        icon: Briefcase,
-    },
-    {
-        title: 'People',
-        href: '/people',
-        icon: Users,
-    },
-    {
-        title: 'Entities',
-        href: '/entities',
-        icon: Building2,
-    },
-    {
-        title: 'Insights',
-        href: '/insights',
-        icon: Brain,
-    },
+/* 🔹 Core */
+const coreNav: NavItem[] = [
+    { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
+    { title: 'Timeline', href: '/timeline', icon: Clock },
+    { title: 'Activities', href: '/activities', icon: CheckSquare },
 ];
 
-/* -----------------------
-   FOOTER NAV
-------------------------*/
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Reports',
-        href: '/activity-logs',
-        icon: BarChart3,
-    },
+/* 🔹 CRM */
+const crmNav: NavItem[] = [
+    { title: 'Entities', href: '/entities', icon: Building2 },
+    { title: 'People', href: '/people', icon: Users },
+    { title: 'Deals', href: '/deals', icon: Briefcase },
 ];
+
+/* 🔹 AI */
+const aiNav: NavItem[] = [
+    { title: 'Insights', href: '/insights', icon: Sparkles },
+];
+
+/* 🔹 Admin */
+const adminNav: NavItem[] = [];
+
+if (props.role === 'admin' || props.role === 'owner') {
+    adminNav.push({
+        title: 'Users',
+        href: '/users',
+        icon: Shield,
+    });
+}
+
+if (props.role === 'owner') {
+    adminNav.push(
+        { title: 'Tenant', href: '/tenant', icon: Building2 },
+        { title: 'Billing', href: '/billing', icon: CreditCard },
+    );
+}
 </script>
 
 <template>
@@ -99,14 +84,21 @@ const footerNavItems: NavItem[] = [
             </SidebarMenu>
         </SidebarHeader>
 
-        <!-- Main navigation -->
+        <!-- Navigation -->
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain label="Core" :items="coreNav" />
+            <NavMain label="CRM" :items="crmNav" />
+            <NavMain label="AI" :items="aiNav" />
+
+            <NavMain
+                v-if="adminNav.length"
+                label="Administration"
+                :items="adminNav"
+            />
         </SidebarContent>
 
         <!-- Footer -->
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

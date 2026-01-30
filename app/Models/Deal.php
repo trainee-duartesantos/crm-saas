@@ -3,6 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Activity;
+use App\Models\Person;
+use App\Models\Tenant;
+use App\Models\Entity;
 
 class Deal extends Model
 {
@@ -41,5 +45,10 @@ class Deal extends Model
     public function person()
     {
         return $this->belongsTo(Person::class);
+    }
+
+    public function activities()
+    {
+        return $this->hasMany(Activity::class);
     }
 }

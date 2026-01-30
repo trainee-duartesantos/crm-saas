@@ -294,8 +294,14 @@ const done = computed(() => props.activities.filter((a) => a.completed_at));
                                     {{ a.person.last_name }}</span
                                 >
                                 <span v-if="a.deal">
-                                    • Deal: {{ a.deal.title }}</span
-                                >
+                                    • Deal:
+                                    <a
+                                        :href="`/deals/${a.deal.id}`"
+                                        class="text-indigo-600 hover:underline"
+                                    >
+                                        {{ a.deal.title }}
+                                    </a>
+                                </span>
                             </div>
 
                             <div

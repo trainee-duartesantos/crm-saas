@@ -85,6 +85,10 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::post('/deals/{deal}/move', [DealController::class, 'move'])
         ->name('deals.move');
 
+    Route::get('/deals/{deal}', [DealController::class, 'show'])
+        ->name('deals.show');
+
+
     Route::get('/activities', [ActivityController::class, 'index']);
     Route::post('/activities', [ActivityController::class, 'store']);
     Route::post('/activities/{activity}/complete', [ActivityController::class, 'complete']);
@@ -98,7 +102,7 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::resource('entities', EntityController::class);
 
-    
+
 });
 
 Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])

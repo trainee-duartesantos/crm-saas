@@ -47,9 +47,12 @@ const moveDeal = (dealId: number, status: string) => {
                         :key="deal.id"
                         class="rounded bg-white p-3 shadow-sm"
                     >
-                        <div class="font-medium">
+                        <a
+                            :href="`/deals/${deal.id}`"
+                            class="font-medium text-indigo-600 hover:underline"
+                        >
                             {{ deal.title }}
-                        </div>
+                        </a>
 
                         <div v-if="deal.value" class="text-sm text-gray-500">
                             € {{ deal.value }}

@@ -76,4 +76,20 @@ class DealController extends Controller
 
         return back();
     }
+
+    public function show(Deal $deal)
+    {
+        $this->authorize('viewAny', ActivityLog::class);
+
+        abort_if($deal->tenant_id !== app('tenant')->id, 403);
+
+        return Inertia::render('deals/Show', [
+            'deal' => $deal->load([
+                'person',
+                'entity',
+                'activities' => fn ($q) => $q->latest(),
+            ]),
+        ]);
+    }
+
 }

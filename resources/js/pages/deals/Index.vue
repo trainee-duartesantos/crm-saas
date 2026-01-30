@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import Heading from '@/components/Heading.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+
+defineOptions({
+    layout: AppLayout,
+});
 
 defineProps<{
     statuses: string[];

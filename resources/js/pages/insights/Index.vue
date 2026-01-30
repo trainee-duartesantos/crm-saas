@@ -12,6 +12,11 @@ import {
     Tooltip,
 } from 'chart.js';
 import { onMounted, ref } from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+
+defineOptions({
+    layout: AppLayout,
+});
 
 Chart.register(
     DoughnutController,

@@ -1,6 +1,11 @@
 <script setup lang="ts">
+import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+
+defineOptions({
+    layout: AppLayout,
+});
 
 defineProps<{
     people: Array<{

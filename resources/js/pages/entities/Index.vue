@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { reactive } from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+
+defineOptions({
+    layout: AppLayout,
+});
 
 const props = defineProps<{
     entities: {

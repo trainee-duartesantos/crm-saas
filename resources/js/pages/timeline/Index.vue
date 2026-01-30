@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import Heading from '@/components/Heading.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
+
+defineOptions({
+    layout: AppLayout,
+});
 
 type TimelineItem = {
     id: number;

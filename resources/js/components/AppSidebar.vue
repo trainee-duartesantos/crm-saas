@@ -13,20 +13,27 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
+import AppLogo from './AppLogo.vue';
+
 import {
-    BookOpen,
-    Building,
-    CreditCard,
-    Folder,
+    Activity,
+    BarChart3,
+    Brain,
+    Briefcase,
+    Building2,
+    CalendarCheck,
     LayoutGrid,
     Users,
 } from 'lucide-vue-next';
-import AppLogo from './AppLogo.vue';
 
+/* role vem do layout */
 defineProps<{
     role: 'user' | 'admin' | 'owner';
 }>();
 
+/* -----------------------
+   MAIN NAV (produto real)
+------------------------*/
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
@@ -36,17 +43,17 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Timeline',
         href: '/timeline',
-        icon: BookOpen,
-    },
-    {
-        title: 'Deals',
-        href: '/deals',
-        icon: CreditCard,
+        icon: Activity,
     },
     {
         title: 'Activities',
         href: '/activities',
-        icon: Folder,
+        icon: CalendarCheck,
+    },
+    {
+        title: 'Deals',
+        href: '/deals',
+        icon: Briefcase,
     },
     {
         title: 'People',
@@ -56,21 +63,30 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Entities',
         href: '/entities',
-        icon: Building,
+        icon: Building2,
+    },
+    {
+        title: 'Insights',
+        href: '/insights',
+        icon: Brain,
     },
 ];
 
+/* -----------------------
+   FOOTER NAV
+------------------------*/
 const footerNavItems: NavItem[] = [
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs',
-        icon: BookOpen,
+        title: 'Reports',
+        href: '/activity-logs',
+        icon: BarChart3,
     },
 ];
 </script>
 
 <template>
     <Sidebar collapsible="icon" variant="inset">
+        <!-- Logo -->
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
@@ -83,10 +99,12 @@ const footerNavItems: NavItem[] = [
             </SidebarMenu>
         </SidebarHeader>
 
+        <!-- Main navigation -->
         <SidebarContent>
             <NavMain :items="mainNavItems" />
         </SidebarContent>
 
+        <!-- Footer -->
         <SidebarFooter>
             <NavFooter :items="footerNavItems" />
             <NavUser />

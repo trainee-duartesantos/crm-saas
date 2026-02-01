@@ -14,6 +14,8 @@ use App\Http\Controllers\PersonController;
 use App\Http\Controllers\DealController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\EntityController;
+use App\Http\Controllers\TenantController;
+use App\Http\Controllers\BillingController;
 
 
 Route::get('/', function () {
@@ -87,6 +89,12 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::get('/deals/{deal}', [DealController::class, 'show'])
         ->name('deals.show');
+
+    Route::get('/tenant', [TenantController::class, 'index'])
+        ->name('tenant.index');
+
+    Route::get('/billing', [BillingController::class, 'index'])
+        ->name('billing.index');
 
 
     Route::get('/activities', [ActivityController::class, 'index']);

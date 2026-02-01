@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
 import Heading from '@/components/Heading.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { router } from '@inertiajs/vue3';
 
 defineOptions({
     layout: AppLayout,
@@ -30,7 +30,7 @@ const moveDeal = (dealId: number, status: string) => {
                 :key="status"
                 class="rounded-lg border bg-gray-50 p-3"
             >
-                <h2 class="mb-3 text-sm font-semibold uppercase text-gray-600">
+                <h2 class="mb-3 text-sm font-semibold text-gray-600 uppercase">
                     {{ status }}
                 </h2>
 
@@ -61,13 +61,13 @@ const moveDeal = (dealId: number, status: string) => {
                             "
                             class="mt-2 text-xs text-blue-600 hover:underline"
                         >
-                            → Move forward
+                            → Next stage
                         </button>
                     </div>
 
                     <div
                         v-if="!deals[status]?.length"
-                        class="text-xs italic text-gray-400"
+                        class="text-xs text-gray-400 italic"
                     >
                         No deals
                     </div>

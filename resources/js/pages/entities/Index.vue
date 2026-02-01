@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
 import { reactive } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
 
 defineOptions({
     layout: AppLayout,
@@ -124,7 +124,8 @@ const resetFilters = () => {
                     <tr
                         v-for="entity in entities.data"
                         :key="entity.id"
-                        class="border-b hover:bg-gray-50"
+                        @click="router.visit(`/entities/${entity.id}`)"
+                        class="cursor-pointer border-b hover:bg-gray-50"
                     >
                         <td class="px-4 py-3 font-semibold">
                             {{ entity.name }}

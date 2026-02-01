@@ -96,7 +96,7 @@ const badgeClasses = (action: string) => {
             <div
                 v-for="item in items"
                 :key="item.id"
-                class="rounded-lg border p-4"
+                class="space-y-2 rounded-lg border p-5"
                 :class="cardClasses(item.action)"
             >
                 <div class="flex items-start justify-between gap-3">

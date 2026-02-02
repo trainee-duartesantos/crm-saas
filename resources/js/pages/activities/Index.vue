@@ -65,6 +65,23 @@ const badge = (type: string) => {
     if (type === 'email') return '✉️';
     return '✅';
 };
+
+const suggesting = ref(false);
+
+const suggestFollowUps = () => {
+    suggesting.value = true;
+
+    router.post(
+        '/ai/activities/follow-ups',
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                suggesting.value = false;
+            },
+        },
+    );
+};
 </script>
 
 <template>
@@ -251,6 +268,15 @@ const badge = (type: string) => {
                 </div>
             </div>
         </div>
+
+        <button
+            @click="suggestFollowUps"
+            :disabled="suggesting"
+            class="flex items-center gap-2 rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+        >
+            <span v-if="!suggesting">🤖 Suggest follow-ups</span>
+            <span v-else class="animate-pulse">🤖 Thinking…</span>
+        </button>
 
         <!-- Pending -->
         <div class="rounded-lg border bg-white p-5">

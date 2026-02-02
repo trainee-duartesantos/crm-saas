@@ -72,6 +72,13 @@ class InviteController extends Controller
     }
 
 
+    public function create()
+    {
+        $this->authorize('viewAny', \App\Models\ActivityLog::class);
+
+        return \Inertia\Inertia::render('Users/Invite');
+    }
+
     public function resend(UserInvite $invite, ActivityLogger $logger)
     {
         $this->authorize('resend', $invite);

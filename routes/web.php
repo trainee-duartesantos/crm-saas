@@ -16,6 +16,7 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\BillingController;
+use App\Http\Controllers\AIChatController;
 
 
 Route::get('/', function () {
@@ -62,6 +63,9 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::post('/ai/draft/follow-up', [AIController::class, 'draftInviteFollowUp'])
         ->name('ai.draft.followup');
+
+    Route::post('/ai/chat', [AIChatController::class, 'chat'])
+        ->name('ai.chat');
 
     Route::get('/insights', [TenantInsightsController::class, 'index'])
         ->name('insights.index');

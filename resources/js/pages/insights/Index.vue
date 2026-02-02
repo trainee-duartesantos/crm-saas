@@ -242,15 +242,12 @@ onMounted(() => {
             </div>
         </div>
 
-        <!-- AI CHAT (ChatGPT-style) -->
-        <div class="rounded-lg border bg-white p-4">
-            <div class="mb-3 font-semibold text-gray-800">🤖 Ask the AI</div>
-
-            <AIChat
-                endpoint="/ai/tenant/next-action"
-                placeholder="What should I improve next?"
-            />
-        </div>
+        <!-- AI CHAT (GLOBAL CRM QUERY) -->
+        <AIChat
+            endpoint="/ai/chat"
+            page="insights"
+            placeholder="Pergunta algo sobre negócios, pessoas ou atividades…"
+        />
 
         <!-- Charts -->
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">

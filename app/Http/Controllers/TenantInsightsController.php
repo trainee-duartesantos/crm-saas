@@ -40,7 +40,10 @@ class TenantInsightsController extends Controller
             ->orderBy('day')
             ->get();
 
-        $activityLabels = $activityByDay->pluck('day')->values();
+        $activityLabels = $activityByDay
+            ->pluck('day')
+            ->map(fn ($d) => \Carbon\Carbon::parse($d)->format('d M'))
+            ->values();
         $activityTotals = $activityByDay->pluck('total')->values();
 
         // ✅ AI events (quantos logs "ai.*")

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
 import {
     ArcElement,
@@ -12,7 +13,6 @@ import {
     Tooltip,
 } from 'chart.js';
 import { onMounted, ref } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
 
 defineOptions({
     layout: AppLayout,
@@ -65,6 +65,8 @@ onMounted(() => {
                 datasets: [
                     {
                         data: props.charts.invites.data,
+                        backgroundColor: ['#4f46e5', '#e5e7eb'],
+                        borderWidth: 0,
                     },
                 ],
             },
@@ -86,16 +88,22 @@ onMounted(() => {
                     {
                         label: 'Events / day (last 14 days)',
                         data: props.charts.activity.data,
+                        backgroundColor: '#6366f1',
+                        borderRadius: 6,
+                        maxBarThickness: 40,
                     },
                 ],
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { display: true },
+                    legend: { display: false },
                 },
                 scales: {
-                    y: { beginAtZero: true },
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 },
+                    },
                 },
             },
         });

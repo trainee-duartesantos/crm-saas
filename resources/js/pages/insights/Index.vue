@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AIChat from '@/components/AIChat.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
 import {
@@ -239,6 +240,16 @@ onMounted(() => {
                     Copy insight
                 </button>
             </div>
+        </div>
+
+        <!-- AI CHAT (ChatGPT-style) -->
+        <div class="rounded-lg border bg-white p-4">
+            <div class="mb-3 font-semibold text-gray-800">🤖 Ask the AI</div>
+
+            <AIChat
+                endpoint="/ai/tenant/next-action"
+                placeholder="What should I improve next?"
+            />
         </div>
 
         <!-- Charts -->

@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+        'url' => 'https://api.openai.com/v1/responses',
+    ],
 ];

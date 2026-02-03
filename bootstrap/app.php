@@ -12,12 +12,21 @@ use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+
+        $middleware->encryptCookies(except: [
+            'appearance',
+            'sidebar_state',
+        ]);
+
+        // ✅ CSRF bypass correto no Laravel 12
+        $middleware->validateCsrfTokens(except: [
+            '/ai/chat',
+        ]);
 
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
@@ -41,5 +50,4 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule) {
         $schedule->command('ai:follow-ups')->dailyAt('09:00');
     })
-
     ->create();

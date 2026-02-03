@@ -87,8 +87,9 @@ class AIChatController extends Controller
 
         return response()->json([
             'session_id' => $session->id,
-            'intent' => $intent,
-            'payload' => $payload,
+            'payload' => $result['payload'] ?? null,
+            'clarifying_question' => $result['clarifying_question'] ?? null,
         ]);
+
     }
 }

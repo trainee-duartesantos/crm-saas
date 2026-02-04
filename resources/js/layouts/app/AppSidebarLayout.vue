@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AIChat from '@/Components/AIChat.vue'; // 🤖 AI CHAT
 import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
@@ -20,12 +21,20 @@ withDefaults(defineProps<Props>(), {
 
 <template>
     <AppShell variant="sidebar">
-        <!-- 🔥 Passamos o role para o Sidebar -->
+        <!-- Sidebar -->
         <AppSidebar :role="user.role" />
 
+        <!-- Conteúdo principal -->
         <AppContent variant="sidebar" class="overflow-x-hidden">
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
             <slot />
         </AppContent>
+
+        <!-- 🤖 AI CHAT GLOBAL (FLOATING) -->
+        <AIChat
+            endpoint="/ai/chat"
+            page="global"
+            placeholder="Pergunta algo ao CRM…"
+        />
     </AppShell>
 </template>

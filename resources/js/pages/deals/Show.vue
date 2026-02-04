@@ -46,6 +46,7 @@ defineOptions({
 
 const props = defineProps<{
     deal: any;
+    timeline: any[];
 }>();
 
 const statusColor = computed(() => {
@@ -126,98 +127,48 @@ const move = (status: string) => {
                     </div>
                 </div>
 
-                <!-- Proposals -->
+                <!-- Timeline -->
                 <div class="rounded-lg border bg-white p-5">
-                    <h2 class="mb-3 text-sm font-semibold text-gray-700">
-                        Propostas
+                    <h2 class="mb-4 text-sm font-semibold text-gray-700">
+                        Timeline
                     </h2>
 
                     <div
-                        v-if="deal.proposals.length === 0"
+                        v-if="!timeline || timeline.length === 0"
                         class="text-sm text-gray-500"
                     >
-                        Nenhuma proposta adicionada.
+                        No activity yet.
                     </div>
 
-                    <div v-else class="space-y-3">
+                    <div v-else class="space-y-4">
                         <div
-                            v-for="p in deal.proposals"
-                            :key="p.id"
-                            class="flex items-center justify-between rounded border p-3"
+                            v-for="(item, index) in timeline"
+                            :key="index"
+                            class="flex gap-4"
                         >
-                            <div>
-                                <div class="font-medium">
-                                    📄 {{ p.original_name }}
-                                </div>
-
-                                <div class="text-xs text-gray-500">
-                                    Upload:
-                                    {{
-                                        new Date(p.created_at).toLocaleString()
-                                    }}
-                                    <span v-if="p.sent_at">
-                                        • Enviada {{ p.sent_at }}
-                                    </span>
-                                </div>
+                            <div class="text-xl">
+                                {{ item.icon }}
                             </div>
 
-                            <button
-                                v-if="!p.sent_at"
-                                @click="openSendModal(p)"
-                                class="rounded bg-indigo-600 px-3 py-2 text-sm text-white"
-                            >
-                                Enviar
-                            </button>
+                            <div class="flex-1 rounded border p-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-medium">
+                                        {{ item.title }}
+                                    </div>
 
-                            <span
-                                v-else
-                                class="text-xs font-semibold text-emerald-700"
-                            >
-                                ✔ Enviada
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                                    <div class="text-xs text-gray-500">
+                                        {{
+                                            new Date(item.date).toLocaleString()
+                                        }}
+                                    </div>
+                                </div>
 
-                <!-- Activities -->
-                <div class="rounded-lg border bg-white p-5">
-                    <h2 class="mb-3 text-sm font-semibold text-gray-700">
-                        Activities
-                    </h2>
-
-                    <div
-                        v-if="deal.activities.length === 0"
-                        class="text-sm text-gray-500"
-                    >
-                        No activities linked to this deal.
-                    </div>
-
-                    <div v-else class="space-y-3">
-                        <div
-                            v-for="a in deal.activities"
-                            :key="a.id"
-                            class="rounded border p-3"
-                        >
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="rounded bg-gray-100 px-2 py-0.5 text-xs"
+                                <div
+                                    v-if="item.description"
+                                    class="mt-1 text-sm text-gray-700"
                                 >
-                                    {{ a.type }}
-                                </span>
-                                <div class="font-medium">
-                                    {{ a.title }}
+                                    {{ item.description }}
                                 </div>
-                            </div>
-
-                            <div class="mt-1 text-xs text-gray-500">
-                                Due: {{ a.due_at ?? '—' }}
-                            </div>
-
-                            <div
-                                v-if="a.notes"
-                                class="mt-2 text-sm text-gray-700"
-                            >
-                                {{ a.notes }}
                             </div>
                         </div>
                     </div>

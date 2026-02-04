@@ -1,7 +1,44 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+
+const sending = ref(false);
+const currentProposal = ref<any>(null);
+
+const emailForm = ref({
+    subject: 'Envio de proposta',
+    body: 'Olá,\n\nSegue em anexo a proposta conforme combinado.\n\nObrigado.',
+});
+
+const openSendModal = (proposal: any) => {
+    currentProposal.value = proposal;
+};
+
+const sendProposal = () => {
+    sending.value = true;
+
+    if (!currentProposal.value) return;
+
+    router.post(
+        `/proposals/${currentProposal.value.id}/send`,
+        emailForm.value,
+        {
+            onFinish: () => {
+                sending.value = false;
+                currentProposal.value = null;
+            },
+        },
+    );
+};
+
+const closeModal = () => {
+    currentProposal.value = null;
+    emailForm.value = {
+        subject: 'Envio de proposta',
+        body: 'Olá,\n\nSegue em anexo a proposta conforme combinado.\n\nObrigado.',
+    };
+};
 
 defineOptions({
     layout: AppLayout,
@@ -85,6 +122,59 @@ const move = (status: string) => {
                             <div class="font-medium">
                                 {{ deal.last_activity_at ?? '—' }}
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Proposals -->
+                <div class="rounded-lg border bg-white p-5">
+                    <h2 class="mb-3 text-sm font-semibold text-gray-700">
+                        Propostas
+                    </h2>
+
+                    <div
+                        v-if="deal.proposals.length === 0"
+                        class="text-sm text-gray-500"
+                    >
+                        Nenhuma proposta adicionada.
+                    </div>
+
+                    <div v-else class="space-y-3">
+                        <div
+                            v-for="p in deal.proposals"
+                            :key="p.id"
+                            class="flex items-center justify-between rounded border p-3"
+                        >
+                            <div>
+                                <div class="font-medium">
+                                    📄 {{ p.original_name }}
+                                </div>
+
+                                <div class="text-xs text-gray-500">
+                                    Upload:
+                                    {{
+                                        new Date(p.created_at).toLocaleString()
+                                    }}
+                                    <span v-if="p.sent_at">
+                                        • Enviada {{ p.sent_at }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <button
+                                v-if="!p.sent_at"
+                                @click="openSendModal(p)"
+                                class="rounded bg-indigo-600 px-3 py-2 text-sm text-white"
+                            >
+                                Enviar
+                            </button>
+
+                            <span
+                                v-else
+                                class="text-xs font-semibold text-emerald-700"
+                            >
+                                ✔ Enviada
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -216,6 +306,43 @@ const move = (status: string) => {
                             Mark as lost
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div
+            v-if="currentProposal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+        >
+            <div class="w-full max-w-lg space-y-4 rounded bg-white p-6">
+                <h3 class="text-lg font-semibold">Enviar proposta</h3>
+
+                <input
+                    v-model="emailForm.subject"
+                    class="w-full rounded border px-3 py-2 text-sm"
+                    placeholder="Assunto"
+                />
+
+                <textarea
+                    v-model="emailForm.body"
+                    rows="6"
+                    class="w-full rounded border px-3 py-2 text-sm"
+                />
+
+                <div class="flex justify-end gap-2">
+                    <button
+                        @click="closeModal"
+                        class="rounded border px-4 py-2 text-sm"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        @click="sendProposal"
+                        :disabled="sending"
+                        class="rounded bg-indigo-600 px-4 py-2 text-sm text-white"
+                    >
+                        Enviar
+                    </button>
                 </div>
             </div>
         </div>

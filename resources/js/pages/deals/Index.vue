@@ -2,6 +2,7 @@
 import Heading from '@/components/Heading.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 defineOptions({
     layout: AppLayout,
@@ -12,18 +13,45 @@ defineProps<{
     deals: Record<string, any[]>;
 }>();
 
+const showCreate = ref(false);
+
+const form = ref({
+    title: '',
+    value: '',
+});
+
 const moveDeal = (dealId: number, status: string) => {
     router.post(`/deals/${dealId}/move`, { status });
+};
+
+const createDeal = () => {
+    router.post('/deals', form.value, {
+        onSuccess: () => {
+            form.value = { title: '', value: '' };
+            showCreate.value = false;
+        },
+    });
 };
 </script>
 
 <template>
     <div class="mx-auto max-w-6xl space-y-6">
-        <Heading
-            title="Deals pipeline"
-            description="Track and move deals across stages"
-        />
+        <!-- Header -->
+        <div class="flex items-center justify-between">
+            <Heading
+                title="Deals pipeline"
+                description="Track and move deals across stages"
+            />
 
+            <button
+                @click="showCreate = true"
+                class="rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white"
+            >
+                + New deal
+            </button>
+        </div>
+
+        <!-- Pipeline -->
         <div class="grid grid-cols-1 gap-6 md:grid-cols-5">
             <div
                 v-for="status in statuses"
@@ -71,6 +99,45 @@ const moveDeal = (dealId: number, status: string) => {
                     >
                         No deals
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Deal Modal -->
+        <div
+            v-if="showCreate"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+        >
+            <div class="w-full max-w-md space-y-4 rounded bg-white p-6">
+                <h3 class="text-lg font-semibold">New deal</h3>
+
+                <input
+                    v-model="form.title"
+                    class="w-full rounded border px-3 py-2 text-sm"
+                    placeholder="Deal title"
+                />
+
+                <input
+                    v-model="form.value"
+                    type="number"
+                    class="w-full rounded border px-3 py-2 text-sm"
+                    placeholder="Value (optional)"
+                />
+
+                <div class="flex justify-end gap-2">
+                    <button
+                        @click="showCreate = false"
+                        class="rounded border px-4 py-2 text-sm"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        @click="createDeal"
+                        class="rounded bg-indigo-600 px-4 py-2 text-sm text-white"
+                    >
+                        Create
+                    </button>
                 </div>
             </div>
         </div>

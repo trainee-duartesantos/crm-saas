@@ -51,4 +51,10 @@ class Deal extends Model
     {
         return $this->hasMany(Activity::class);
     }
+
+    public function proposals()
+    {
+        return $this->hasMany(Proposal::class);
+    }
+
 }

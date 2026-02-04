@@ -88,8 +88,8 @@ class DealController extends Controller
                 'person',
                 'entity',
                 'activities' => fn ($q) => $q->latest(),
+                'proposals' => fn ($q) => $q->latest(),
             ]),
         ]);
     }
-
 }

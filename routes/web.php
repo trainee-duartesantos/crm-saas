@@ -17,6 +17,7 @@ use App\Http\Controllers\EntityController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\AIChatController;
+use App\Http\Controllers\ProposalController;
 
 
 Route::get('/', function () {
@@ -99,6 +100,12 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::get('/billing', [BillingController::class, 'index'])
         ->name('billing.index');
+
+    Route::post('/deals/{deal}/proposals', [ProposalController::class, 'store'])
+    ->name('proposals.store');
+
+    Route::post('/proposals/{proposal}/send', [ProposalController::class, 'send'])
+        ->name('proposals.send');
 
 
     Route::get('/activities', [ActivityController::class, 'index']);

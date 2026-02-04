@@ -5,12 +5,13 @@ namespace App\Services\AI;
 use App\Models\Activity;
 use App\Models\Deal;
 use App\Models\Person;
+use App\Models\UserInvite;
 
 class ChatRunner
 {
     public function run(array $intent, array $context): array
     {
-        $tenantId = $context['tenant_id'];
+        $tenantId = $context['tenant']->id;
 
         if (($intent['intent'] ?? 'unknown') === 'unknown') {
             return [
@@ -21,6 +22,9 @@ class ChatRunner
         }
 
         return match ($intent['intent']) {
+            'invites.pending.count' => $this->invitesPendingCount($tenantId),
+            'tenant.name' => $this->tenantName($context),
+
             'deal_volume_by_status' => $this->dealVolumeByStatus($tenantId, $intent),
             'deal_list_by_status' => $this->dealListByStatus($tenantId, $intent),
             'person_phone_lookup' => $this->personPhoneLookup($tenantId, $intent),
@@ -32,6 +36,7 @@ class ChatRunner
                 'quick_actions' => $this->defaultQuickQuestions(),
             ],
         };
+
     }
 
     private function dealVolumeByStatus(int $tenantId, array $intent): array
@@ -205,6 +210,46 @@ class ChatRunner
             ['label' => 'Qual o volume em proposal?', 'action' => 'ask', 'payload' => ['text' => 'Qual o volume de negócios no estado proposal?']],
             ['label' => 'Lista negócios em lead', 'action' => 'ask', 'payload' => ['text' => 'Lista negócios no estado lead (10)']],
             ['label' => 'Qual o telemóvel do António Pinheiro?', 'action' => 'ask', 'payload' => ['text' => 'Qual o telemóvel do António Pinheiro?']],
+        ];
+    }
+
+    private function tenantName(array $context): array
+    {
+        $tenant = $context['tenant'] ?? null;
+
+        return [
+            'answer' => $tenant
+                ? "O nome do tenant é **{$tenant->name}**."
+                : "Não consegui obter o tenant.",
+            'cards' => [],
+            'quick_actions' => $this->defaultQuickQuestions(),
+        ];
+    }
+
+    private function invitesPendingCount(int $tenantId): array
+    {
+        $count = UserInvite::query()
+            ->where('tenant_id', $tenantId)
+            ->whereNull('accepted_at')
+            ->where('expires_at', '>', now())
+            ->count();
+
+        return [
+            'answer' => "Tens **{$count}** convite(s) pendente(s).",
+            'cards' => [
+                [
+                    'title' => 'Gerir Convites',
+                    'href' => '/users/invite',
+                    'meta' => ['pending' => $count],
+                ],
+            ],
+            'quick_actions' => [
+                [
+                    'label' => 'Convidar novo utilizador',
+                    'action' => 'open',
+                    'payload' => ['href' => '/users/invite'],
+                ],
+            ],
         ];
     }
 }

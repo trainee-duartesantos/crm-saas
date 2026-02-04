@@ -37,6 +37,7 @@ return [
 
     'openai' => [
         'key' => env('OPENAI_API_KEY'),
-        'url' => 'https://api.openai.com/v1/responses',
+        'model' => env('OPENAI_MODEL', 'gpt-5-nano'),
+        'url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1/responses'),
     ],
 ];

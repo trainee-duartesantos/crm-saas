@@ -13,11 +13,14 @@ class AIChatController extends Controller
 {
     public function chat(Request $request, ChatEngine $engine, ChatRunner $runner)
     {
-        // Reutilizamos a policy “central” (igual ao resto do projeto)
         $this->authorize('viewAny', ActivityLog::class);
 
         $tenant = app('tenant');
         $user = $request->user();
+
+        if (!$tenant) {
+            abort(400, 'Tenant não definido');
+        }
 
         $data = $request->validate([
             'message' => ['required', 'string', 'max:2000'],
@@ -25,25 +28,19 @@ class AIChatController extends Controller
             'session_id' => ['nullable', 'integer', 'exists:ai_chat_sessions,id'],
         ]);
 
-        // ✅ session (por utilizador)
-        $session = null;
-
-        if (!empty($data['session_id'])) {
-            $session = AIChatSession::query()
-                ->where('id', $data['session_id'])
+        // Sessão
+        $session = !empty($data['session_id'])
+            ? AIChatSession::where('id', $data['session_id'])
                 ->where('tenant_id', $tenant->id)
                 ->where('user_id', $user->id)
-                ->firstOrFail();
-        } else {
-            $session = AIChatSession::create([
+                ->firstOrFail()
+            : AIChatSession::create([
                 'tenant_id' => $tenant->id,
                 'user_id' => $user->id,
-                'title' => $data['page'] ? ("Chat - " . $data['page']) : 'Chat',
+                'title' => $data['page'] ? "Chat - {$data['page']}" : 'Chat',
                 'last_message_at' => now(),
             ]);
-        }
 
-        // ✅ Guardar mensagem do utilizador
         AIChatMessage::create([
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,
@@ -52,44 +49,40 @@ class AIChatController extends Controller
             'content' => $data['message'],
         ]);
 
-        // ✅ Contexto mínimo (sem dados sensíveis)
-        $context = [
+        // 🔍 Interpretar intenção
+        $intent = $engine->interpret($data['message'], $tenant, $user);
+
+        // ⚙️ Executar ação real
+        $payload = $runner->run($intent, [
             'tenant_id' => $tenant->id,
-            'user_id' => $user->id,
+            'tenant' => $tenant,
+            'user' => $user,
             'page' => $data['page'] ?? null,
-            'role' => $user->role ?? 'user',
-        ];
+        ]);
 
-        // 1) Interpretar intenção (NÃO responder ainda)
-        $intent = $engine->interpret($data['message'], $context);
 
-        // 2) Executar query real com tenant+perms e devolver UI payload
-        $payload = $runner->run($intent, $context);
-
-        // ✅ Guardar resposta do assistant
         AIChatMessage::create([
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,
             'session_id' => $session->id,
             'role' => 'assistant',
-            'content' => $payload['answer'] ?? '(no answer)',
+            'content' => $payload['answer'] ?? '(sem resposta)',
             'intent' => $intent,
             'payload' => $payload,
         ]);
 
         $session->update(['last_message_at' => now()]);
 
-        // ✅ Log para timeline (opcional, mas útil no PDF)
         activity_log('ai.chat.query', null, [
-            'page' => $context['page'],
+            'page' => $data['page'] ?? null,
             'intent' => $intent['intent'] ?? null,
         ]);
 
         return response()->json([
             'session_id' => $session->id,
-            'payload' => $result['payload'] ?? null,
-            'clarifying_question' => $result['clarifying_question'] ?? null,
+            'payload' => $payload,
+            'clarifying_question' => $intent['clarifying_question'] ?? null,
         ]);
-
     }
+
 }

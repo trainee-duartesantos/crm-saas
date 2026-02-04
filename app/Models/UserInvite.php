@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Scopes\TenantScope;
 
 class UserInvite extends Model
 {
+    protected $table = 'user_invites';
+
     protected $fillable = [
         'tenant_id',
         'email',
@@ -45,5 +48,9 @@ class UserInvite extends Model
                     ->where('expires_at', '>', now());
     }
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new TenantScope);
+    }
 }
 

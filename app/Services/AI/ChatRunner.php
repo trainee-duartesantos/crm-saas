@@ -234,16 +234,45 @@ class ChatRunner
             ->where('expires_at', '>', now())
             ->count();
 
+        // 🎯 Mensagem inteligente
+        if ($count === 0) {
+            return [
+                'answer' => 'Não tens convites pendentes 🎉',
+                'cards' => [],
+                'quick_actions' => [
+                    [
+                        'label' => 'Convidar novo utilizador',
+                        'action' => 'open',
+                        'payload' => ['href' => '/users/invite'],
+                    ],
+                ],
+            ];
+        }
+
+        if ($count >= 5) {
+            $answer = "Tens **{$count}** convites pendentes ⚠️  
+    Queres que eu te ajude a geri-los agora?";
+        } else {
+            $answer = "Tens **{$count}** convite(s) pendente(s).";
+        }
+
         return [
-            'answer' => "Tens **{$count}** convite(s) pendente(s).",
+            'answer' => $answer,
             'cards' => [
                 [
                     'title' => 'Gerir Convites',
                     'href' => '/users/invite',
-                    'meta' => ['pending' => $count],
+                    'meta' => [
+                        'Convites pendentes' => $count,
+                    ],
                 ],
             ],
             'quick_actions' => [
+                [
+                    'label' => 'Gerir convites',
+                    'action' => 'open',
+                    'payload' => ['href' => '/users/invite'],
+                ],
                 [
                     'label' => 'Convidar novo utilizador',
                     'action' => 'open',

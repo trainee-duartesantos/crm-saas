@@ -168,7 +168,7 @@ const copy = (text: string) => navigator.clipboard.writeText(text);
                             : 'bg-indigo-600 text-white'
                     "
                 >
-                    {{ m.content }}
+                    <div v-html="m.content"></div>
 
                     <button
                         v-if="m.role === 'assistant'"

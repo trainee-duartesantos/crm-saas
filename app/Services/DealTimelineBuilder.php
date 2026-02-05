@@ -20,6 +20,7 @@ class DealTimelineBuilder
             ->latest()
             ->get()
             ->map(fn ($a) => [
+                'id' => $a->id,
                 'type' => 'activity',
                 'icon' => match ($a->type) {
                     'call' => '📞',

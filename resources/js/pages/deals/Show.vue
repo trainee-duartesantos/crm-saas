@@ -96,6 +96,7 @@ const filteredTimeline = computed(() => {
 const activeItem = ref<any | null>(null);
 
 const openItem = (item: any) => {
+    if (item.type !== 'activity') return;
     activeItem.value = item;
 };
 
@@ -380,6 +381,8 @@ watch(activeItem, (value) => {
             </div>
         </div>
     </div>
+
+    <!-- Activity detail modal -->
     <div
         v-if="activeItem"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
@@ -398,6 +401,10 @@ watch(activeItem, (value) => {
                 </button>
             </div>
 
+            <div class="text-xs text-gray-400 uppercase">
+                {{ activeItem.type }}
+            </div>
+
             <div class="text-sm text-gray-500">
                 {{ new Date(activeItem.date).toLocaleString() }}
             </div>
@@ -409,17 +416,31 @@ watch(activeItem, (value) => {
                 {{ activeItem.description }}
             </div>
 
-            <div v-else class="text-sm text-gray-400 italic">
-                No additional details.
-            </div>
-
-            <div class="flex justify-end">
+            <div class="flex justify-end gap-2">
                 <button
                     @click="closeItem"
                     class="rounded border px-4 py-2 text-sm"
                 >
                     Close
                 </button>
+
+                <button
+                    v-if="!activeItem.meta?.completed_at"
+                    @click="
+                        router.post(
+                            `/activities/${activeItem.meta.activity_id}/complete`,
+                            {},
+                            { onSuccess: closeItem },
+                        )
+                    "
+                    class="rounded bg-emerald-600 px-4 py-2 text-sm text-white"
+                >
+                    Mark as done
+                </button>
+
+                <span v-else class="text-sm font-semibold text-emerald-600">
+                    ✓ Completed
+                </span>
             </div>
         </div>
     </div>

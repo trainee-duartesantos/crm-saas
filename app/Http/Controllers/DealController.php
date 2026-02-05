@@ -97,65 +97,34 @@ class DealController extends Controller
 
         abort_if($deal->tenant_id !== app('tenant')->id, 403);
 
-        $activities = $deal->activities()
-            ->latest()
-            ->get()
-            ->map(fn ($a) => [
-                'type' => 'activity',
-                'icon' => match ($a->type) {
-                    'call' => '📞',
-                    'meeting' => '🤝',
-                    'email' => '✉️',
-                    default => '✅',
-                },
-                'title' => $a->title,
-                'description' => $a->notes,
-                'date' => $a->created_at,
-            ]);
+        $deal->load(['person', 'entity']);
 
-        $proposals = $deal->proposals()
-            ->latest()
-            ->get()
-            ->map(fn ($p) => [
-                'type' => 'proposal',
-                'icon' => '📄',
-                'title' => $p->original_name,
-                'description' => $p->sent_at
-                    ? 'Proposal sent by email'
-                    : 'Proposal uploaded',
-                'date' => $p->sent_at ?? $p->created_at,
-            ]);
+        $types = request()->filled('types')
+            ? explode(',', request('types'))
+            : null;
 
-        $logs = ActivityLog::query()
-            ->where('tenant_id', app('tenant')->id)
-            ->where('subject_type', $deal->getMorphClass())
-            ->where('subject_id', $deal->id)
-            ->latest()
-            ->get()
-            ->map(fn ($l) => [
-                'type' => 'log',
-                'icon' => '🕒',
-                'title' => str_replace('.', ' ', ucfirst($l->action)),
-                'description' => null,
-                'date' => $l->created_at,
-            ]);
+        $q = request('q');
 
-        $timeline = collect()
-            ->merge($activities)
-            ->merge($proposals)
-            ->merge($logs)
-            ->sortByDesc('date')
-            ->values();
+        $timeline = app(\App\Services\DealTimelineBuilder::class)
+            ->build($deal, $types, $q);
 
-        $followUp = DealFollowUp::where('deal_id', $deal->id)
+        $followUp = $deal->followUps()
             ->where('active', true)
+            ->latest('next_run_at')
             ->first();
 
         return Inertia::render('deals/Show', [
-            'deal' => $deal->load(['person', 'entity']),
-            'timeline' => $timeline,
+            'deal' => $deal,
+            'timeline' => $timeline['items'],
+            'timeline_counts' => $timeline['counts'],
             'followUp' => $followUp,
         ]);
+    }
+
+
+    public function followUps()
+    {
+        return $this->hasMany(\App\Models\DealFollowUp::class);
     }
 
 }

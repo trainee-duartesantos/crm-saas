@@ -66,6 +66,41 @@ const statusColor = computed(() => {
 const move = (status: string) => {
     router.post(`/deals/${props.deal.id}/move`, { status });
 };
+
+const filters = ref<string[]>([]);
+const search = ref('');
+
+const toggleFilter = (type: string) => {
+    filters.value.includes(type)
+        ? (filters.value = filters.value.filter((t) => t !== type))
+        : filters.value.push(type);
+};
+
+const filteredTimeline = computed(() => {
+    return props.timeline.filter((item) => {
+        const matchType =
+            filters.value.length === 0 || filters.value.includes(item.type);
+
+        const matchSearch =
+            !search.value ||
+            item.title?.toLowerCase().includes(search.value.toLowerCase()) ||
+            item.description
+                ?.toLowerCase()
+                .includes(search.value.toLowerCase());
+
+        return matchType && matchSearch;
+    });
+});
+
+const activeItem = ref<any | null>(null);
+
+const openItem = (item: any) => {
+    activeItem.value = item;
+};
+
+const closeItem = () => {
+    activeItem.value = null;
+};
 </script>
 
 <template>
@@ -143,6 +178,29 @@ const move = (status: string) => {
                     Cancel automatic follow-ups
                 </button>
 
+                <div class="flex flex-wrap items-center gap-2">
+                    <button
+                        v-for="(count, type) in timeline_counts"
+                        :key="type"
+                        @click="toggleFilter(type)"
+                        class="rounded-full border px-3 py-1 text-xs font-semibold"
+                        :class="
+                            filters.includes(type)
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-white text-gray-600'
+                        "
+                    >
+                        {{ type }} ({{ count }})
+                    </button>
+
+                    <input
+                        v-model="search"
+                        type="text"
+                        placeholder="Search timeline…"
+                        class="ml-auto rounded border px-3 py-1 text-sm"
+                    />
+                </div>
+
                 <!-- Timeline -->
                 <div class="rounded-lg border bg-white p-5">
                     <h2 class="mb-4 text-sm font-semibold text-gray-700">
@@ -150,7 +208,7 @@ const move = (status: string) => {
                     </h2>
 
                     <div
-                        v-if="!timeline || timeline.length === 0"
+                        v-if="filteredTimeline.length === 0"
                         class="text-sm text-gray-500"
                     >
                         No activity yet.
@@ -158,7 +216,7 @@ const move = (status: string) => {
 
                     <div v-else class="space-y-4">
                         <div
-                            v-for="(item, index) in timeline"
+                            v-for="(item, index) in filteredTimeline"
                             :key="index"
                             class="flex gap-4"
                         >
@@ -166,7 +224,10 @@ const move = (status: string) => {
                                 {{ item.icon }}
                             </div>
 
-                            <div class="flex-1 rounded border p-3">
+                            <div
+                                class="flex-1 cursor-pointer rounded border p-3 hover:bg-gray-50"
+                                @click="openItem(item)"
+                            >
                                 <div class="flex items-center justify-between">
                                     <div class="font-medium">
                                         {{ item.title }}
@@ -311,6 +372,49 @@ const move = (status: string) => {
                         Enviar
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+    <div
+        v-if="activeItem"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    >
+        <div class="w-full max-w-lg space-y-4 rounded bg-white p-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold">
+                    {{ activeItem.title }}
+                </h3>
+
+                <button
+                    @click="closeItem"
+                    class="text-gray-400 hover:text-gray-600"
+                >
+                    ✕
+                </button>
+            </div>
+
+            <div class="text-sm text-gray-500">
+                {{ new Date(activeItem.date).toLocaleString() }}
+            </div>
+
+            <div
+                v-if="activeItem.description"
+                class="rounded bg-gray-50 p-3 text-sm text-gray-700"
+            >
+                {{ activeItem.description }}
+            </div>
+
+            <div v-else class="text-sm text-gray-400 italic">
+                No additional details.
+            </div>
+
+            <div class="flex justify-end">
+                <button
+                    @click="closeItem"
+                    class="rounded border px-4 py-2 text-sm"
+                >
+                    Close
+                </button>
             </div>
         </div>
     </div>

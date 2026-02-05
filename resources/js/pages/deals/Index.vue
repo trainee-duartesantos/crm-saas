@@ -44,8 +44,9 @@ onMounted(() => {
             onEnd: (event: any) => {
                 const dealId = event.item.dataset.id;
                 const newStatus = column.dataset.status;
+                const oldStatus = event.from.dataset.status;
 
-                if (!dealId || !newStatus) return;
+                if (!dealId || !newStatus || newStatus === oldStatus) return;
 
                 router.post(`/deals/${dealId}/move`, {
                     status: newStatus,
@@ -56,6 +57,14 @@ onMounted(() => {
 });
 </script>
 
+<style>
+.sortable-ghost {
+    opacity: 0.6;
+}
+.sortable-drag {
+    cursor: grabbing;
+}
+</style>
 <template>
     <div class="mx-auto max-w-6xl space-y-6">
         <!-- Header -->

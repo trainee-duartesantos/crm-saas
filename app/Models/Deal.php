@@ -7,6 +7,7 @@ use App\Models\Activity;
 use App\Models\Person;
 use App\Models\Tenant;
 use App\Models\Entity;
+use App\Models\DealFollowUp;
 
 class Deal extends Model
 {
@@ -57,4 +58,8 @@ class Deal extends Model
         return $this->hasMany(Proposal::class);
     }
 
+    public function followUps()
+    {
+        return $this->hasMany(DealFollowUp::class);
+    }
 }

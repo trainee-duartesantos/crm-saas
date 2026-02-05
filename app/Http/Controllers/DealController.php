@@ -6,6 +6,7 @@ use App\Models\Deal;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Activity;
 
 class DealController extends Controller
 {
@@ -73,6 +74,23 @@ class DealController extends Controller
             'to' => $deal->status,
             'title' => $deal->title,
         ]);
+
+        if ($request->status === 'proposal' && $oldStatus !== 'proposal') {
+            Activity::create([
+                'tenant_id' => app('tenant')->id,
+                'created_by' => auth()->id(),
+                'deal_id' => $deal->id,
+                'person_id' => $deal->person_id,
+                'type' => 'email',
+                'title' => 'Automatic follow-up',
+                'notes' => 'Automated follow-up email scheduled.',
+                'due_at' => now()->addDays(3),
+            ]);
+
+            activity_log('deal.follow_up.scheduled', $deal, [
+                'due_at' => now()->addDays(3)->toISOString(),
+            ]);
+        }
 
         return back();
     }

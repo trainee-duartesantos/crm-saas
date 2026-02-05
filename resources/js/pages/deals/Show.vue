@@ -47,6 +47,7 @@ defineOptions({
 const props = defineProps<{
     deal: any;
     timeline: any[];
+    followUp?: any;
 }>();
 
 const statusColor = computed(() => {
@@ -126,6 +127,21 @@ const move = (status: string) => {
                         </div>
                     </div>
                 </div>
+
+                <div v-if="followUp">
+                    <div class="text-sm text-indigo-600">
+                        📧 Next follow-up:
+                        {{ new Date(followUp.next_run_at).toLocaleString() }}
+                    </div>
+                </div>
+
+                <button
+                    v-if="followUp"
+                    @click="router.post(`/deals/${deal.id}/follow-ups/cancel`)"
+                    class="text-sm text-red-600 hover:underline"
+                >
+                    Cancel automatic follow-ups
+                </button>
 
                 <!-- Timeline -->
                 <div class="rounded-lg border bg-white p-5">

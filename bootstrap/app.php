@@ -50,5 +50,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule) {
         $schedule->command('ai:follow-ups')->dailyAt('09:00');
         $schedule->command('deals:check-inactive')->dailyAt('10:00');
+        $schedule->command('deals:send-follow-ups')->hourly();
     })
     ->create();

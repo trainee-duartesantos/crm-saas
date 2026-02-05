@@ -18,6 +18,7 @@ use App\Http\Controllers\TenantController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\ProposalController;
+use App\Http\Controllers\DealFollowUpController;
 
 
 Route::get('/', function () {
@@ -102,11 +103,12 @@ Route::middleware(['auth', 'tenant'])->group(function () {
         ->name('billing.index');
 
     Route::post('/deals/{deal}/proposals', [ProposalController::class, 'store'])
-    ->name('proposals.store');
+        ->name('proposals.store');
 
     Route::post('/proposals/{proposal}/send', [ProposalController::class, 'send'])
         ->name('proposals.send');
 
+    Route::post('/deals/{deal}/follow-ups/cancel', [DealFollowUpController::class, 'cancel']);
 
     Route::get('/activities', [ActivityController::class, 'index']);
     Route::post('/activities', [ActivityController::class, 'store']);

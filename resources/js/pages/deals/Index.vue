@@ -2,13 +2,14 @@
 import Heading from '@/components/Heading.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import Sortable from 'sortablejs';
+import { onMounted, ref } from 'vue';
 
 defineOptions({
     layout: AppLayout,
 });
 
-defineProps<{
+const props = defineProps<{
     statuses: string[];
     deals: Record<string, any[]>;
 }>();
@@ -20,9 +21,7 @@ const form = ref({
     value: '',
 });
 
-const moveDeal = (dealId: number, status: string) => {
-    router.post(`/deals/${dealId}/move`, { status });
-};
+const columns = ref<HTMLElement[]>([]);
 
 const createDeal = () => {
     router.post('/deals', form.value, {
@@ -32,6 +31,29 @@ const createDeal = () => {
         },
     });
 };
+
+onMounted(() => {
+    columns.value.forEach((column) => {
+        Sortable.create(column, {
+            group: 'deals',
+            animation: 150,
+            ghostClass: 'bg-indigo-100',
+            dragClass: 'opacity-50',
+            filter: '.is-locked',
+
+            onEnd: (event: any) => {
+                const dealId = event.item.dataset.id;
+                const newStatus = column.dataset.status;
+
+                if (!dealId || !newStatus) return;
+
+                router.post(`/deals/${dealId}/move`, {
+                    status: newStatus,
+                });
+            },
+        });
+    });
+});
 </script>
 
 <template>
@@ -62,11 +84,22 @@ const createDeal = () => {
                     {{ status }}
                 </h2>
 
-                <div class="space-y-2">
+                <div
+                    class="min-h-12.5 space-y-2"
+                    :data-status="status"
+                    ref="columns"
+                >
                     <div
                         v-for="deal in deals[status] ?? []"
                         :key="deal.id"
-                        class="rounded bg-white p-3 shadow-sm"
+                        :data-id="deal.id"
+                        class="cursor-move rounded bg-white p-3 shadow-sm"
+                        :class="{
+                            'is-locked cursor-not-allowed opacity-50': [
+                                'won',
+                                'lost',
+                            ].includes(status),
+                        }"
                     >
                         <a
                             :href="`/deals/${deal.id}`"
@@ -78,19 +111,6 @@ const createDeal = () => {
                         <div v-if="deal.value" class="text-sm text-gray-500">
                             € {{ deal.value }}
                         </div>
-
-                        <button
-                            v-if="status !== 'won' && status !== 'lost'"
-                            @click="
-                                moveDeal(
-                                    deal.id,
-                                    statuses[statuses.indexOf(status) + 1],
-                                )
-                            "
-                            class="mt-2 text-xs text-blue-600 hover:underline"
-                        >
-                            → Next stage
-                        </button>
                     </div>
 
                     <div

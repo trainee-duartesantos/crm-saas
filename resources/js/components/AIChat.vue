@@ -163,7 +163,7 @@ const copy = (text: string) => navigator.clipboard.writeText(text);
         <!-- OPEN CHAT -->
         <div
             v-else
-            class="flex w-[380px] flex-col rounded-xl border bg-white shadow-2xl"
+            class="flex w-95 flex-col rounded-xl border bg-white shadow-2xl"
         >
             <!-- HEADER -->
             <div
@@ -189,10 +189,7 @@ const copy = (text: string) => navigator.clipboard.writeText(text);
             </div>
 
             <!-- MESSAGES -->
-            <div
-                ref="container"
-                class="h-[380px] space-y-4 overflow-y-auto p-4"
-            >
+            <div ref="container" class="h-95 space-y-4 overflow-y-auto p-4">
                 <div
                     v-for="m in messages"
                     :key="m.id"

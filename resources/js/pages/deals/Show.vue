@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const sending = ref(false);
 const currentProposal = ref<any>(null);
@@ -48,6 +48,7 @@ const props = defineProps<{
     deal: any;
     timeline: any[];
     followUp?: any;
+    timeline_counts: Record<string, number>;
 }>();
 
 const statusColor = computed(() => {
@@ -101,6 +102,10 @@ const openItem = (item: any) => {
 const closeItem = () => {
     activeItem.value = null;
 };
+
+watch(activeItem, (value) => {
+    document.body.style.overflow = value ? 'hidden' : '';
+});
 </script>
 
 <template>

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Activity;
 use App\Models\DealFollowUp;
+use App\Services\DealTimelineBuilder;
 
 class DealController extends Controller
 {
@@ -127,4 +128,26 @@ class DealController extends Controller
         return $this->hasMany(\App\Models\DealFollowUp::class);
     }
 
+    public function timeline(Request $request, Deal $deal)
+    {
+        $this->authorize('viewAny', ActivityLog::class);
+        abort_if($deal->tenant_id !== app('tenant')->id, 403);
+
+        $types = $request->input('types');
+        $q = $request->input('q');
+
+        $timeline = app(DealTimelineBuilder::class)
+            ->build($deal, $types, $q);
+
+        $followUp = $deal->followUps()
+            ->where('active', true)
+            ->latest('next_run_at')
+            ->first();
+
+        return response()->json([
+            'items' => $timeline['items'],
+            'counts' => $timeline['counts'],
+            'followUp' => $followUp,
+        ]);
+    }
 }

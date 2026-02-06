@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 /* -----------------------
    Layout
 ----------------------- */
-defineOptions({
-    layout: AppLayout,
-});
+defineOptions({ layout: AppLayout });
 
 /* -----------------------
    Props
@@ -16,9 +14,16 @@ defineOptions({
 const props = defineProps<{
     deal: any;
     timeline: any[];
-    followUp?: any;
     timeline_counts: Record<string, number>;
+    followUp?: any;
 }>();
+
+/* -----------------------
+   Local reactive state
+----------------------- */
+const timelineItems = ref([...props.timeline]);
+const timelineCounts = ref({ ...props.timeline_counts });
+const followUpLocal = ref(props.followUp ?? null);
 
 /* -----------------------
    Deal actions
@@ -52,8 +57,8 @@ const toggleFilter = (type: string) => {
         : filters.value.push(type);
 };
 
-const filteredTimeline = computed(() => {
-    return props.timeline.filter((item) => {
+const filteredTimeline = computed(() =>
+    timelineItems.value.filter((item) => {
         const matchType =
             filters.value.length === 0 || filters.value.includes(item.type);
 
@@ -65,21 +70,17 @@ const filteredTimeline = computed(() => {
                 .includes(search.value.toLowerCase());
 
         return matchType && matchSearch;
-    });
-});
+    }),
+);
 
 /* -----------------------
-   Modals state
+   Modals
 ----------------------- */
 const activeItem = ref<any | null>(null);
 const activeModal = ref<'activity' | 'proposal' | 'log' | null>(null);
 
-/* -----------------------
-   Open / close modals
------------------------ */
 const openItem = (item: any) => {
     if (!['activity', 'proposal', 'log'].includes(item.type)) return;
-
     activeItem.value = item;
     activeModal.value = item.type;
 };
@@ -90,7 +91,7 @@ const closeItem = () => {
 };
 
 /* -----------------------
-   Proposal email modal
+   Proposal send modal
 ----------------------- */
 const sending = ref(false);
 const currentProposal = ref<any>(null);
@@ -116,7 +117,6 @@ const sendProposal = () => {
     if (!currentProposal.value) return;
 
     sending.value = true;
-
     router.post(
         `/proposals/${currentProposal.value.id}/send`,
         emailForm.value,
@@ -132,8 +132,43 @@ const sendProposal = () => {
 /* -----------------------
    UX: lock scroll on modal
 ----------------------- */
-watch(activeModal, (value) => {
-    document.body.style.overflow = value ? 'hidden' : '';
+watch(activeModal, (v) => {
+    document.body.style.overflow = v ? 'hidden' : '';
+});
+
+/* -----------------------
+   Polling (real-time ready)
+----------------------- */
+let pollId: number | null = null;
+
+const fetchTimeline = async () => {
+    if (activeModal.value || currentProposal.value) return;
+    if (document.visibilityState !== 'visible') return;
+
+    const params = new URLSearchParams();
+    filters.value.forEach((t) => params.append('types[]', t));
+    if (search.value) params.set('q', search.value);
+
+    const res = await fetch(
+        `/deals/${props.deal.id}/timeline?${params.toString()}`,
+        { headers: { Accept: 'application/json' } },
+    );
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+    timelineItems.value = data.items;
+    timelineCounts.value = data.counts;
+    followUpLocal.value = data.followUp;
+};
+
+onMounted(() => {
+    fetchTimeline();
+    pollId = window.setInterval(fetchTimeline, 5000);
+});
+
+onBeforeUnmount(() => {
+    if (pollId) clearInterval(pollId);
 });
 </script>
 

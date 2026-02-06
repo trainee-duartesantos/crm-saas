@@ -3,53 +3,29 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
-const sending = ref(false);
-const currentProposal = ref<any>(null);
-
-const emailForm = ref({
-    subject: 'Envio de proposta',
-    body: 'Olá,\n\nSegue em anexo a proposta conforme combinado.\n\nObrigado.',
-});
-
-const openSendModal = (proposal: any) => {
-    currentProposal.value = proposal;
-};
-
-const sendProposal = () => {
-    sending.value = true;
-
-    if (!currentProposal.value) return;
-
-    router.post(
-        `/proposals/${currentProposal.value.id}/send`,
-        emailForm.value,
-        {
-            onFinish: () => {
-                sending.value = false;
-                currentProposal.value = null;
-            },
-        },
-    );
-};
-
-const closeModal = () => {
-    currentProposal.value = null;
-    emailForm.value = {
-        subject: 'Envio de proposta',
-        body: 'Olá,\n\nSegue em anexo a proposta conforme combinado.\n\nObrigado.',
-    };
-};
-
+/* -----------------------
+   Layout
+----------------------- */
 defineOptions({
     layout: AppLayout,
 });
 
+/* -----------------------
+   Props
+----------------------- */
 const props = defineProps<{
     deal: any;
     timeline: any[];
     followUp?: any;
     timeline_counts: Record<string, number>;
 }>();
+
+/* -----------------------
+   Deal actions
+----------------------- */
+const move = (status: string) => {
+    router.post(`/deals/${props.deal.id}/move`, { status });
+};
 
 const statusColor = computed(() => {
     switch (props.deal.status) {
@@ -64,10 +40,9 @@ const statusColor = computed(() => {
     }
 });
 
-const move = (status: string) => {
-    router.post(`/deals/${props.deal.id}/move`, { status });
-};
-
+/* -----------------------
+   Timeline filters
+----------------------- */
 const filters = ref<string[]>([]);
 const search = ref('');
 
@@ -93,19 +68,71 @@ const filteredTimeline = computed(() => {
     });
 });
 
+/* -----------------------
+   Modals state
+----------------------- */
 const activeItem = ref<any | null>(null);
+const activeModal = ref<'activity' | 'proposal' | 'log' | null>(null);
 
+/* -----------------------
+   Open / close modals
+----------------------- */
 const openItem = (item: any) => {
-    if (['activity', 'proposal', 'log'].includes(item.type)) {
-        activeItem.value = item;
-    }
+    if (!['activity', 'proposal', 'log'].includes(item.type)) return;
+
+    activeItem.value = item;
+    activeModal.value = item.type;
 };
 
 const closeItem = () => {
     activeItem.value = null;
+    activeModal.value = null;
 };
 
-watch(activeItem, (value) => {
+/* -----------------------
+   Proposal email modal
+----------------------- */
+const sending = ref(false);
+const currentProposal = ref<any>(null);
+
+const emailForm = ref({
+    subject: 'Envio de proposta',
+    body: 'Olá,\n\nSegue em anexo a proposta conforme combinado.\n\nObrigado.',
+});
+
+const openSendModal = (proposal: any) => {
+    currentProposal.value = proposal;
+};
+
+const closeSendModal = () => {
+    currentProposal.value = null;
+    emailForm.value = {
+        subject: 'Envio de proposta',
+        body: 'Olá,\n\nSegue em anexo a proposta conforme combinado.\n\nObrigado.',
+    };
+};
+
+const sendProposal = () => {
+    if (!currentProposal.value) return;
+
+    sending.value = true;
+
+    router.post(
+        `/proposals/${currentProposal.value.id}/send`,
+        emailForm.value,
+        {
+            onFinish: () => {
+                sending.value = false;
+                closeSendModal();
+            },
+        },
+    );
+};
+
+/* -----------------------
+   UX: lock scroll on modal
+----------------------- */
+watch(activeModal, (value) => {
     document.body.style.overflow = value ? 'hidden' : '';
 });
 </script>
@@ -115,9 +142,7 @@ watch(activeItem, (value) => {
         <!-- Header -->
         <div class="flex items-start justify-between gap-6">
             <div>
-                <h1 class="text-2xl font-semibold">
-                    {{ deal.title }}
-                </h1>
+                <h1 class="text-2xl font-semibold">{{ deal.title }}</h1>
 
                 <div class="mt-2 flex items-center gap-3 text-sm text-gray-600">
                     <span
@@ -127,7 +152,7 @@ watch(activeItem, (value) => {
                         {{ deal.status.toUpperCase() }}
                     </span>
 
-                    <span v-if="deal.value"> € {{ deal.value }} </span>
+                    <span v-if="deal.value">€ {{ deal.value }}</span>
                 </div>
             </div>
 
@@ -141,8 +166,9 @@ watch(activeItem, (value) => {
 
         <!-- Main grid -->
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <!-- Deal info -->
+            <!-- Left -->
             <div class="space-y-6 md:col-span-2">
+                <!-- Deal info -->
                 <div class="rounded-lg border bg-white p-5">
                     <h2 class="mb-3 text-sm font-semibold text-gray-700">
                         Deal information
@@ -170,21 +196,24 @@ watch(activeItem, (value) => {
                     </div>
                 </div>
 
-                <div v-if="followUp">
+                <!-- Follow-up -->
+                <div v-if="followUp" class="space-y-1">
                     <div class="text-sm text-indigo-600">
                         📧 Next follow-up:
                         {{ new Date(followUp.next_run_at).toLocaleString() }}
                     </div>
+
+                    <button
+                        @click="
+                            router.post(`/deals/${deal.id}/follow-ups/cancel`)
+                        "
+                        class="text-sm text-red-600 hover:underline"
+                    >
+                        Cancel automatic follow-ups
+                    </button>
                 </div>
 
-                <button
-                    v-if="followUp"
-                    @click="router.post(`/deals/${deal.id}/follow-ups/cancel`)"
-                    class="text-sm text-red-600 hover:underline"
-                >
-                    Cancel automatic follow-ups
-                </button>
-
+                <!-- Filters -->
                 <div class="flex flex-wrap items-center gap-2">
                     <button
                         v-for="(count, type) in timeline_counts"
@@ -227,9 +256,7 @@ watch(activeItem, (value) => {
                             :key="index"
                             class="flex gap-4"
                         >
-                            <div class="text-xl">
-                                {{ item.icon }}
-                            </div>
+                            <div class="text-xl">{{ item.icon }}</div>
 
                             <div
                                 class="flex-1 cursor-pointer rounded border p-3 hover:bg-gray-50"
@@ -278,43 +305,8 @@ watch(activeItem, (value) => {
                         </div>
 
                         <div class="text-gray-500">
-                            {{ deal.person.email ?? '' }}
+                            {{ deal.person.email }}
                         </div>
-
-                        <a
-                            :href="`/people/${deal.person.id}`"
-                            class="mt-2 inline-block text-indigo-600 hover:underline"
-                        >
-                            View person →
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Entity -->
-                <div class="rounded-lg border bg-white p-5">
-                    <h3 class="mb-2 text-sm font-semibold text-gray-700">
-                        Entity
-                    </h3>
-
-                    <div v-if="!deal.entity" class="text-sm text-gray-500">
-                        No entity linked.
-                    </div>
-
-                    <div v-else class="text-sm">
-                        <div class="font-medium">
-                            {{ deal.entity.name }}
-                        </div>
-
-                        <div class="text-gray-500">
-                            {{ deal.entity.email ?? '' }}
-                        </div>
-
-                        <a
-                            :href="`/entities/${deal.entity.id}`"
-                            class="mt-2 inline-block text-indigo-600 hover:underline"
-                        >
-                            View entity →
-                        </a>
                     </div>
                 </div>
 
@@ -344,77 +336,24 @@ watch(activeItem, (value) => {
                 </div>
             </div>
         </div>
-        <div
-            v-if="currentProposal"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-        >
-            <div class="w-full max-w-lg space-y-4 rounded bg-white p-6">
-                <h3 class="text-lg font-semibold">Enviar proposta</h3>
-
-                <input
-                    v-model="emailForm.subject"
-                    class="w-full rounded border px-3 py-2 text-sm"
-                    placeholder="Assunto"
-                />
-
-                <textarea
-                    v-model="emailForm.body"
-                    rows="6"
-                    class="w-full rounded border px-3 py-2 text-sm"
-                />
-
-                <div class="flex justify-end gap-2">
-                    <button
-                        @click="closeModal"
-                        class="rounded border px-4 py-2 text-sm"
-                    >
-                        Cancelar
-                    </button>
-
-                    <button
-                        @click="sendProposal"
-                        :disabled="sending"
-                        class="rounded bg-indigo-600 px-4 py-2 text-sm text-white"
-                    >
-                        Enviar
-                    </button>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- Activity detail modal -->
+    <!-- ======================
+         ACTIVITY MODAL
+    ====================== -->
     <div
-        v-if="activeItem"
+        v-if="activeModal === 'activity' && activeItem"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
     >
         <div class="w-full max-w-lg space-y-4 rounded bg-white p-6">
-            <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold">
-                    {{ activeItem.title }}
-                </h3>
-
-                <button
-                    @click="closeItem"
-                    class="text-gray-400 hover:text-gray-600"
-                >
-                    ✕
-                </button>
-            </div>
-
-            <div class="text-xs text-gray-400 uppercase">
-                {{ activeItem.type }}
-            </div>
+            <h3 class="text-lg font-semibold">{{ activeItem.title }}</h3>
 
             <div class="text-sm text-gray-500">
                 {{ new Date(activeItem.date).toLocaleString() }}
             </div>
 
-            <div
-                v-if="activeItem.description"
-                class="rounded bg-gray-50 p-3 text-sm text-gray-700"
-            >
-                {{ activeItem.description }}
+            <div class="rounded bg-gray-50 p-3 text-sm">
+                {{ activeItem.description ?? 'No details.' }}
             </div>
 
             <div class="flex justify-end gap-2">
@@ -439,19 +378,23 @@ watch(activeItem, (value) => {
                     Mark as done
                 </button>
 
-                <span v-else class="text-sm font-semibold text-emerald-600">
+                <span
+                    v-else
+                    class="rounded bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700"
+                >
                     ✓ Completed
                 </span>
             </div>
         </div>
     </div>
 
-    <!-- Proposal detail modal -->
+    <!-- PROPOSAL MODAL -->
     <div
-        v-if="activeItem && activeItem.type === 'proposal'"
+        v-if="activeModal === 'proposal' && activeItem"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
     >
         <div class="w-full max-w-lg space-y-4 rounded bg-white p-6">
+            <!-- Header -->
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-semibold">
                     {{ activeItem.meta.original_name }}
@@ -498,29 +441,28 @@ watch(activeItem, (value) => {
                     Resend email
                 </button>
             </div>
+
+            <!-- Footer -->
+            <div class="flex justify-end">
+                <button
+                    @click="closeItem"
+                    class="rounded border px-4 py-2 text-sm"
+                >
+                    Close
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Log detail modal -->
+    <!-- ======================
+         LOG MODAL
+    ====================== -->
     <div
-        v-if="activeItem && activeItem.type === 'log'"
+        v-if="activeModal === 'log' && activeItem"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
     >
         <div class="w-full max-w-lg space-y-4 rounded bg-white p-6">
-            <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold">
-                    {{ activeItem.title }}
-                </h3>
-
-                <button
-                    @click="closeItem"
-                    class="text-gray-400 hover:text-gray-600"
-                >
-                    ✕
-                </button>
-            </div>
-
-            <div class="text-xs text-gray-400 uppercase">System log</div>
+            <h3 class="text-lg font-semibold">{{ activeItem.title }}</h3>
 
             <div class="text-sm text-gray-500">
                 {{ new Date(activeItem.date).toLocaleString() }}
@@ -530,11 +472,15 @@ watch(activeItem, (value) => {
                 Actor: <strong>{{ activeItem.meta.actor }}</strong>
             </div>
 
-            <div class="rounded bg-gray-50 p-3 text-sm">
-                <pre class="whitespace-pre-wrap"
-                    >{{ JSON.stringify(activeItem.meta.metadata, null, 2) }}
-            </pre
+            <div class="space-y-2 text-sm">
+                <div
+                    v-for="(value, key) in activeItem.meta.metadata"
+                    :key="key"
+                    class="flex gap-2"
                 >
+                    <span class="font-medium text-gray-600">{{ key }}:</span>
+                    <span class="text-gray-800">{{ value }}</span>
+                </div>
             </div>
 
             <div class="flex justify-end">
@@ -543,6 +489,46 @@ watch(activeItem, (value) => {
                     class="rounded border px-4 py-2 text-sm"
                 >
                     Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================
+         SEND PROPOSAL MODAL
+    ====================== -->
+    <div
+        v-if="currentProposal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    >
+        <div class="w-full max-w-lg space-y-4 rounded bg-white p-6">
+            <h3 class="text-lg font-semibold">Enviar proposta</h3>
+
+            <input
+                v-model="emailForm.subject"
+                class="w-full rounded border px-3 py-2 text-sm"
+            />
+
+            <textarea
+                v-model="emailForm.body"
+                rows="6"
+                class="w-full rounded border px-3 py-2 text-sm"
+            />
+
+            <div class="flex justify-end gap-2">
+                <button
+                    @click="closeSendModal"
+                    class="rounded border px-4 py-2 text-sm"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    @click="sendProposal"
+                    :disabled="sending"
+                    class="rounded bg-indigo-600 px-4 py-2 text-sm text-white"
+                >
+                    Enviar
                 </button>
             </div>
         </div>

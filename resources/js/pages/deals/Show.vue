@@ -71,6 +71,16 @@ const logIconMap: Record<string, string> = {
     'deal.created': '✨',
 };
 
+const executeAiAction = async (action: any) => {
+    if (!action?.endpoint) return;
+
+    if (action.method === 'post') {
+        await router.post(action.endpoint, action.payload ?? {}, {
+            preserveScroll: true,
+        });
+    }
+};
+
 const formatDate = (date: string) => {
     return new Date(date).toLocaleString('en-GB', {
         day: '2-digit',
@@ -419,10 +429,22 @@ onBeforeUnmount(() => {
                                 </button>
                                 <div
                                     v-if="item.meta?.risk"
-                                    class="mt-2 rounded bg-red-50 p-2 text-sm text-red-700"
+                                    class="mt-2 space-y-2 rounded bg-red-50 p-3 text-sm text-red-700"
                                 >
-                                    <strong>⚠️ Risk:</strong>
-                                    {{ item.meta.reason }}
+                                    <div>
+                                        <strong>⚠️ Risk:</strong>
+                                        {{ item.meta.reason }}
+                                    </div>
+
+                                    <button
+                                        v-if="item.meta.action"
+                                        @click="
+                                            executeAiAction(item.meta.action)
+                                        "
+                                        class="inline-flex items-center gap-2 rounded bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+                                    >
+                                        🤖 {{ item.meta.action.label }}
+                                    </button>
                                 </div>
                             </div>
                         </div>

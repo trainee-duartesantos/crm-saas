@@ -26,8 +26,19 @@ class DetectDealRisks
                     'risk' => 'stalled_deal',
                     'severity' => 'high',
                     'confidence' => 0.78,
-                    'reason' => 'No activities or status changes recently',
+                    'reason' => 'No activity in the last 7 days',
+                    'action' => [
+                        'label' => 'Create follow-up activity',
+                        'type' => 'create_activity',
+                        'endpoint' => "/activities",
+                        'method' => 'post',
+                        'payload' => [
+                            'title' => 'Follow up deal',
+                            'deal_id' => $deal->id,
+                        ],
+                    ],
                 ],
+
             ];
         }
 
@@ -52,7 +63,14 @@ class DetectDealRisks
                     'severity' => 'medium',
                     'confidence' => 0.71,
                     'reason' => 'Proposal sent more than 5 days ago',
+                    'action' => [
+                        'label' => 'Send follow-up',
+                        'type' => 'send_follow_up',
+                        'endpoint' => "/ai/send-follow-up/{$deal->id}",
+                        'method' => 'post',
+                    ],
                 ],
+
             ];
         }
 

@@ -119,6 +119,9 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::get('/ai/deals/{deal}/next-action', [AIController::class, 'dealNextAction'])
         ->name('ai.deals.next-action');
 
+    Route::post('/ai/deals/{deal}/summary', [AIController::class, 'summarizeDeal'])
+        ->name('ai.deal.summary');
+
     Route::get('/activities', [ActivityController::class, 'index']);
     Route::post('/activities', [ActivityController::class, 'store']);
     Route::post('/activities/{activity}/complete', [ActivityController::class, 'complete']);

@@ -71,14 +71,21 @@ const logIconMap: Record<string, string> = {
     'deal.created': '✨',
 };
 
-const executeAiAction = async (action: any) => {
-    if (!action?.endpoint) return;
+const executingAi = ref(false);
 
-    if (action.method === 'post') {
-        await router.post(action.endpoint, action.payload ?? {}, {
-            preserveScroll: true,
-        });
-    }
+const executeAiAction = (action: any) => {
+    if (!action?.endpoint) return;
+    if ((action.method ?? 'post') !== 'post') return;
+
+    executingAi.value = true;
+
+    router.post(action.endpoint, action.payload ?? {}, {
+        preserveScroll: true,
+        onFinish: () => {
+            executingAi.value = false;
+            fetchTimeline();
+        },
+    });
 };
 
 const formatDate = (date: string) => {
@@ -182,6 +189,25 @@ watch(activeModal, (v) => {
     document.body.style.overflow = v ? 'hidden' : '';
 });
 
+const generatingSummary = ref(false);
+
+const generateAiSummary = () => {
+    generatingSummary.value = true;
+
+    router.post(
+        `/ai/deals/${props.deal.id}/summary`,
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                generatingSummary.value = false;
+                // opcional: puxar logo, sem esperar 5s
+                fetchTimeline();
+            },
+        },
+    );
+};
+
 /* -----------------------
    Polling (real-time ready)
 ----------------------- */
@@ -278,10 +304,12 @@ onBeforeUnmount(() => {
                 </div>
 
                 <!-- Follow-up -->
-                <div v-if="followUp" class="space-y-1">
+                <div v-if="followUpLocal" class="space-y-1">
                     <div class="text-sm text-indigo-600">
                         📧 Next follow-up:
-                        {{ new Date(followUp.next_run_at).toLocaleString() }}
+                        {{
+                            new Date(followUpLocal.next_run_at).toLocaleString()
+                        }}
                     </div>
 
                     <button
@@ -297,7 +325,7 @@ onBeforeUnmount(() => {
                 <!-- Filters -->
                 <div class="flex flex-wrap items-center gap-2">
                     <button
-                        v-for="(count, type) in timeline_counts"
+                        v-for="(count, type) in timelineCounts"
                         :key="type"
                         @click="toggleFilter(type)"
                         class="rounded-full border px-3 py-1 text-xs font-semibold"
@@ -318,6 +346,42 @@ onBeforeUnmount(() => {
                     />
                 </div>
 
+                <button
+                    @click="generateAiSummary"
+                    :disabled="generatingSummary"
+                    class="mb-3 inline-flex items-center gap-2 rounded bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-60"
+                >
+                    🤖
+                    {{ generatingSummary ? 'Summarizing…' : 'Summarize deal' }}
+                </button>
+
+                <div
+                    v-if="deal.ai_summary"
+                    class="rounded-lg border bg-purple-50 p-4 text-sm"
+                >
+                    <div
+                        class="mb-1 flex items-center gap-2 font-semibold text-purple-700"
+                    >
+                        🤖 AI Summary
+                        <span class="rounded bg-purple-100 px-2 py-0.5 text-xs">
+                            {{ Math.round(deal.ai_summary.confidence * 100) }}%
+                            confidence
+                        </span>
+                    </div>
+
+                    <p class="text-gray-700">
+                        {{ deal.ai_summary.text }}
+                    </p>
+
+                    <div class="mt-1 text-xs text-gray-500">
+                        Generated
+                        {{
+                            new Date(
+                                deal.ai_summary.generated_at,
+                            ).toLocaleString()
+                        }}
+                    </div>
+                </div>
                 <!-- Timeline -->
                 <div class="rounded-lg border bg-white p-5">
                     <h2 class="mb-4 text-sm font-semibold text-gray-700">
@@ -378,7 +442,7 @@ onBeforeUnmount(() => {
                                                 'bg-purple-100 text-purple-700':
                                                     item.type === 'ai',
                                                 'bg-red-100 text-red-700':
-                                                    item.meta?.risk,
+                                                    item.meta?.risk === true,
                                                 'bg-gray-100 text-gray-700':
                                                     item.type === 'log',
                                             }"
@@ -438,12 +502,18 @@ onBeforeUnmount(() => {
 
                                     <button
                                         v-if="item.meta.action"
-                                        @click="
+                                        @click.stop="
                                             executeAiAction(item.meta.action)
                                         "
-                                        class="inline-flex items-center gap-2 rounded bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+                                        :disabled="executingAi"
+                                        class="inline-flex items-center gap-2 rounded bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-60"
                                     >
-                                        🤖 {{ item.meta.action.label }}
+                                        🤖
+                                        {{
+                                            executingAi
+                                                ? 'Working…'
+                                                : item.meta.action.label
+                                        }}
                                     </button>
                                 </div>
                             </div>

@@ -23,22 +23,22 @@ class DetectDealRisks
                 'description' => 'Deal has no activity in the last 7 days',
                 'date' => now(),
                 'meta' => [
-                    'risk' => 'stalled_deal',
+                    'risk' => true,
+                    'risk_code' => 'stalled_deal',
                     'severity' => 'high',
                     'confidence' => 0.78,
                     'reason' => 'No activity in the last 7 days',
                     'action' => [
                         'label' => 'Create follow-up activity',
-                        'type' => 'create_activity',
-                        'endpoint' => "/activities",
                         'method' => 'post',
+                        'endpoint' => '/activities',
                         'payload' => [
-                            'title' => 'Follow up deal',
                             'deal_id' => $deal->id,
+                            'title' => 'Follow up deal',
+                            'type' => 'call',
                         ],
                     ],
                 ],
-
             ];
         }
 
@@ -48,10 +48,7 @@ class DetectDealRisks
             ->latest('sent_at')
             ->first();
 
-        if (
-            $lastProposal &&
-            Carbon::parse($lastProposal->sent_at)->diffInDays(now()) >= 5
-        ) {
+        if ($lastProposal && Carbon::parse($lastProposal->sent_at)->diffInDays(now()) >= 5) {
             $risks[] = [
                 'type' => 'ai',
                 'icon' => '⚠️',
@@ -64,13 +61,17 @@ class DetectDealRisks
                     'confidence' => 0.71,
                     'reason' => 'Proposal sent more than 5 days ago',
                     'action' => [
-                        'label' => 'Send follow-up',
-                        'type' => 'send_follow_up',
-                        'endpoint' => "/ai/send-follow-up/{$deal->id}",
+                        'label' => 'Create follow-up activity',
+                        'type' => 'create_activity',
+                        'endpoint' => "/activities",
                         'method' => 'post',
+                        'payload' => [
+                            'title' => 'Follow up on proposal',
+                            'deal_id' => $deal->id,
+                            
+                        ],
                     ],
                 ],
-
             ];
         }
 

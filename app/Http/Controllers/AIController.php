@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use App\Mail\FollowUpMail;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Deal;
+use App\Services\AI\GenerateDealSummary;
 use App\Services\AI\DealNextBestActionService;
 
 class AIController extends Controller
@@ -305,6 +306,30 @@ class AIController extends Controller
         return response()->json([
             'item' => $item,
         ]);
+    }
+
+    public function summarizeDeal(Deal $deal)
+    {
+        $this->authorize('viewAny', ActivityLog::class);
+        abort_if($deal->tenant_id !== app('tenant')->id, 403);
+
+        $summary = app(GenerateDealSummary::class)->generate($deal);
+
+        $deal->update([
+            'ai_summary' => [
+                'text' => $summary['description'],
+                'confidence' => $summary['meta']['confidence'],
+                'generated_at' => now(),
+            ],
+        ]);
+
+        activity_log('ai.deal.summary.generated', $deal, [
+            'message' => $summary['description'],
+            'confidence' => $summary['meta']['confidence'],
+        ]);
+
+        return back();
+
     }
 
 }

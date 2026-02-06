@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\Deal;
 use Illuminate\Support\Collection;
 use App\Services\NextBestActionService;
+use App\Services\AI\DetectDealRisks;
 
 class DealTimelineBuilder
 {
@@ -88,10 +89,13 @@ class DealTimelineBuilder
                 ],
             ]);
 
+        $aiRisks = app(DetectDealRisks::class)->detect($deal);
+
         $items = $items
             ->merge($activities)
             ->merge($proposals)
-            ->merge($logs);
+            ->merge($logs)
+            ->merge(collect($aiRisks));
 
         // ---- filtros opcionais ----
         if ($types && count($types)) {

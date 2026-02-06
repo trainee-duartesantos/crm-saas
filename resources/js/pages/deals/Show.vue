@@ -365,17 +365,19 @@ onBeforeUnmount(() => {
                                         <span
                                             class="rounded-full px-2 py-0.5 text-xs font-semibold"
                                             :class="{
-                                                'bg-blue-100 text-blue-700':
-                                                    item.type === 'activity',
-                                                'bg-indigo-100 text-indigo-700':
-                                                    item.type === 'proposal',
-                                                'bg-gray-100 text-gray-700':
-                                                    item.type === 'log',
                                                 'bg-purple-100 text-purple-700':
                                                     item.type === 'ai',
+                                                'bg-red-100 text-red-700':
+                                                    item.meta?.risk,
+                                                'bg-gray-100 text-gray-700':
+                                                    item.type === 'log',
                                             }"
                                         >
-                                            {{ item.type }}
+                                            {{
+                                                item.meta?.risk
+                                                    ? 'risk'
+                                                    : item.type
+                                            }}
                                         </span>
                                     </div>
 
@@ -415,6 +417,13 @@ onBeforeUnmount(() => {
                                 >
                                     📤 Upload proposal
                                 </button>
+                                <div
+                                    v-if="item.meta?.risk"
+                                    class="mt-2 rounded bg-red-50 p-2 text-sm text-red-700"
+                                >
+                                    <strong>⚠️ Risk:</strong>
+                                    {{ item.meta.reason }}
+                                </div>
                             </div>
                         </div>
                     </div>

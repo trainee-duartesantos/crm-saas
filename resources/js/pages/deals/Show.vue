@@ -329,9 +329,12 @@ onBeforeUnmount(() => {
                         >
                             <div class="text-xl">
                                 {{
-                                    item.type === 'log'
-                                        ? (logIconMap[item.meta.action] ?? '🕒')
-                                        : item.icon
+                                    item.type === 'ai'
+                                        ? '🤖'
+                                        : item.type === 'log'
+                                          ? (logIconMap[item.meta.action] ??
+                                            '🕒')
+                                          : item.icon
                                 }}
                             </div>
 
@@ -346,6 +349,20 @@ onBeforeUnmount(() => {
                                         </div>
 
                                         <span
+                                            v-if="
+                                                item.type === 'ai' &&
+                                                item.meta?.confidence
+                                            "
+                                            class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700"
+                                        >
+                                            {{
+                                                Math.round(
+                                                    item.meta.confidence * 100,
+                                                )
+                                            }}% confidence
+                                        </span>
+
+                                        <span
                                             class="rounded-full px-2 py-0.5 text-xs font-semibold"
                                             :class="{
                                                 'bg-blue-100 text-blue-700':
@@ -354,6 +371,8 @@ onBeforeUnmount(() => {
                                                     item.type === 'proposal',
                                                 'bg-gray-100 text-gray-700':
                                                     item.type === 'log',
+                                                'bg-purple-100 text-purple-700':
+                                                    item.type === 'ai',
                                             }"
                                         >
                                             {{ item.type }}
@@ -366,11 +385,36 @@ onBeforeUnmount(() => {
                                 </div>
 
                                 <div
-                                    v-if="item.description"
+                                    v-if="item.type === 'ai'"
+                                    class="mt-1 text-sm text-gray-700"
+                                >
+                                    <strong>Recommended:</strong>
+                                    {{ item.description }}
+
+                                    <div
+                                        v-if="item.meta?.reason"
+                                        class="mt-1 text-xs text-gray-500 italic"
+                                    >
+                                        {{ item.meta.reason }}
+                                    </div>
+                                </div>
+
+                                <div
+                                    v-else-if="item.description"
                                     class="mt-1 text-sm text-gray-700"
                                 >
                                     {{ item.description }}
                                 </div>
+                                <button
+                                    v-if="
+                                        item.type === 'ai' &&
+                                        item.meta?.action === 'upload_proposal'
+                                    "
+                                    class="mt-2 inline-flex items-center gap-2 rounded bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+                                    @click="$inertia.visit(`/deals/${deal.id}`)"
+                                >
+                                    📤 Upload proposal
+                                </button>
                             </div>
                         </div>
                     </div>

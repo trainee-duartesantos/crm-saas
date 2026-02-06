@@ -43,7 +43,7 @@ onMounted(() => {
 
             onEnd: (event: any) => {
                 const dealId = event.item.dataset.id;
-                const newStatus = column.dataset.status;
+                const newStatus = event.to.dataset.status;
                 const oldStatus = event.from.dataset.status;
 
                 if (!dealId || !newStatus || newStatus === oldStatus) return;

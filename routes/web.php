@@ -116,6 +116,8 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::get('/deals/{deal}/timeline', [DealController::class, 'timeline'])
         ->name('deals.timeline');
 
+    Route::get('/ai/deals/{deal}/next-action', [AIController::class, 'dealNextAction'])
+        ->name('ai.deals.next-action');
 
     Route::get('/activities', [ActivityController::class, 'index']);
     Route::post('/activities', [ActivityController::class, 'store']);

@@ -11,6 +11,8 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use App\Mail\FollowUpMail;
 use Illuminate\Support\Facades\Mail;
+use App\Models\Deal;
+use App\Services\AI\DealNextBestActionService;
 
 class AIController extends Controller
 {
@@ -293,4 +295,16 @@ class AIController extends Controller
 
         return back();
     }
+
+    public function dealNextAction(Deal $deal, DealNextBestActionService $service)
+    {
+        abort_if($deal->tenant_id !== app('tenant')->id, 403);
+
+        $item = $service->forDeal($deal);
+
+        return response()->json([
+            'item' => $item,
+        ]);
+    }
+
 }

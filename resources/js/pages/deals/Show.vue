@@ -8,6 +8,19 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 ----------------------- */
 defineOptions({ layout: AppLayout });
 
+const humanizeLogTitle = (action: string) => {
+    const map: Record<string, string> = {
+        'deal.status.changed': 'Status changed',
+        'deal.follow_up.started': 'Follow-up started',
+        'deal.follow_up.cancelled': 'Follow-up cancelled',
+        'proposal.sent': 'Proposal sent',
+        'proposal.uploaded': 'Proposal uploaded',
+        'deal.created': 'Deal created',
+    };
+
+    return map[action] ?? action.replaceAll('.', ' ');
+};
+
 /* -----------------------
    Props
 ----------------------- */
@@ -44,6 +57,29 @@ const statusColor = computed(() => {
             return 'bg-gray-100 text-gray-700';
     }
 });
+
+const humanizeKey = (key: string) => {
+    return key.replaceAll('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+};
+
+const logIconMap: Record<string, string> = {
+    'deal.status.changed': '🔁',
+    'deal.follow_up.started': '📧',
+    'deal.follow_up.cancelled': '🛑',
+    'proposal.sent': '📄',
+    'proposal.uploaded': '⬆️',
+    'deal.created': '✨',
+};
+
+const formatDate = (date: string) => {
+    return new Date(date).toLocaleString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+};
 
 /* -----------------------
    Timeline filters
@@ -291,21 +327,41 @@ onBeforeUnmount(() => {
                             :key="index"
                             class="flex gap-4"
                         >
-                            <div class="text-xl">{{ item.icon }}</div>
+                            <div class="text-xl">
+                                {{
+                                    item.type === 'log'
+                                        ? (logIconMap[item.meta.action] ?? '🕒')
+                                        : item.icon
+                                }}
+                            </div>
 
                             <div
                                 class="flex-1 cursor-pointer rounded border p-3 hover:bg-gray-50"
                                 @click="openItem(item)"
                             >
                                 <div class="flex items-center justify-between">
-                                    <div class="font-medium">
-                                        {{ item.title }}
+                                    <div class="flex items-center gap-2">
+                                        <div class="font-medium">
+                                            {{ item.title }}
+                                        </div>
+
+                                        <span
+                                            class="rounded-full px-2 py-0.5 text-xs font-semibold"
+                                            :class="{
+                                                'bg-blue-100 text-blue-700':
+                                                    item.type === 'activity',
+                                                'bg-indigo-100 text-indigo-700':
+                                                    item.type === 'proposal',
+                                                'bg-gray-100 text-gray-700':
+                                                    item.type === 'log',
+                                            }"
+                                        >
+                                            {{ item.type }}
+                                        </span>
                                     </div>
 
                                     <div class="text-xs text-gray-500">
-                                        {{
-                                            new Date(item.date).toLocaleString()
-                                        }}
+                                        {{ formatDate(item.date) }}
                                     </div>
                                 </div>
 
@@ -497,7 +553,9 @@ onBeforeUnmount(() => {
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
     >
         <div class="w-full max-w-lg space-y-4 rounded bg-white p-6">
-            <h3 class="text-lg font-semibold">{{ activeItem.title }}</h3>
+            <h3 class="text-lg font-semibold">
+                {{ humanizeLogTitle(activeItem.meta.action) }}
+            </h3>
 
             <div class="text-sm text-gray-500">
                 {{ new Date(activeItem.date).toLocaleString() }}
@@ -513,7 +571,10 @@ onBeforeUnmount(() => {
                     :key="key"
                     class="flex gap-2"
                 >
-                    <span class="font-medium text-gray-600">{{ key }}:</span>
+                    <span class="font-medium text-gray-600">
+                        {{ humanizeKey(String(key)) }}:
+                    </span>
+
                     <span class="text-gray-800">{{ value }}</span>
                 </div>
             </div>

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\ActivityLog;
 use App\Models\Deal;
 use Illuminate\Support\Collection;
+use App\Services\NextBestActionService;
 
 class DealTimelineBuilder
 {
@@ -14,6 +15,14 @@ class DealTimelineBuilder
         ?string $q = null
     ): array {
         $items = collect();
+
+        // 0) AI – Next best action
+        $aiItem = app(NextBestActionService::class)->forDeal($deal);
+
+        if ($aiItem) {
+            $items->push($aiItem);
+        }
+
 
         // 1) Activities (tarefas, calls, meetings, emails, etc)
         $activities = $deal->activities()

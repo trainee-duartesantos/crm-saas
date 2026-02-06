@@ -75,7 +75,7 @@ class DealTimelineBuilder
                     'log_id' => $l->id,
                     'action' => $l->action,
                     'metadata' => $l->metadata,
-                    'actor_id' => $l->actor_id,
+                    'actor' => optional($l->actor)->name,
                 ],
             ]);
 

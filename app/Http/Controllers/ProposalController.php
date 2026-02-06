@@ -88,4 +88,11 @@ class ProposalController extends Controller
         return back();
     }
 
+    public function download(Proposal $proposal)
+    {
+        $this->authorize('view', $proposal);
+
+        return Storage::download($proposal->file_path, $proposal->original_name);
+    }
+
 }

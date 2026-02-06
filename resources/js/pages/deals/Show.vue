@@ -96,8 +96,9 @@ const filteredTimeline = computed(() => {
 const activeItem = ref<any | null>(null);
 
 const openItem = (item: any) => {
-    if (item.type !== 'activity') return;
-    activeItem.value = item;
+    if (['activity', 'proposal', 'log'].includes(item.type)) {
+        activeItem.value = item;
+    }
 };
 
 const closeItem = () => {
@@ -441,6 +442,108 @@ watch(activeItem, (value) => {
                 <span v-else class="text-sm font-semibold text-emerald-600">
                     ✓ Completed
                 </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Proposal detail modal -->
+    <div
+        v-if="activeItem && activeItem.type === 'proposal'"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    >
+        <div class="w-full max-w-lg space-y-4 rounded bg-white p-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold">
+                    {{ activeItem.meta.original_name }}
+                </h3>
+
+                <button
+                    @click="closeItem"
+                    class="text-gray-400 hover:text-gray-600"
+                >
+                    ✕
+                </button>
+            </div>
+
+            <div class="text-xs text-gray-400 uppercase">Proposal</div>
+
+            <div class="text-sm text-gray-500">
+                {{ new Date(activeItem.date).toLocaleString() }}
+            </div>
+
+            <div class="rounded bg-gray-50 p-3 text-sm">
+                <span
+                    v-if="activeItem.meta.sent_at"
+                    class="font-semibold text-emerald-600"
+                >
+                    ✓ Sent
+                </span>
+                <span v-else class="font-semibold text-yellow-600">
+                    ⏳ Uploaded (not sent)
+                </span>
+            </div>
+
+            <div class="flex justify-between gap-2">
+                <a
+                    :href="`/proposals/${activeItem.meta.proposal_id}/download`"
+                    class="rounded border px-4 py-2 text-sm"
+                >
+                    Download
+                </a>
+
+                <button
+                    @click="openSendModal({ id: activeItem.meta.proposal_id })"
+                    class="rounded bg-indigo-600 px-4 py-2 text-sm text-white"
+                >
+                    Resend email
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Log detail modal -->
+    <div
+        v-if="activeItem && activeItem.type === 'log'"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    >
+        <div class="w-full max-w-lg space-y-4 rounded bg-white p-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold">
+                    {{ activeItem.title }}
+                </h3>
+
+                <button
+                    @click="closeItem"
+                    class="text-gray-400 hover:text-gray-600"
+                >
+                    ✕
+                </button>
+            </div>
+
+            <div class="text-xs text-gray-400 uppercase">System log</div>
+
+            <div class="text-sm text-gray-500">
+                {{ new Date(activeItem.date).toLocaleString() }}
+            </div>
+
+            <div v-if="activeItem.meta?.actor" class="text-sm text-gray-600">
+                Actor: <strong>{{ activeItem.meta.actor }}</strong>
+            </div>
+
+            <div class="rounded bg-gray-50 p-3 text-sm">
+                <pre class="whitespace-pre-wrap"
+                    >{{ JSON.stringify(activeItem.meta.metadata, null, 2) }}
+            </pre
+                >
+            </div>
+
+            <div class="flex justify-end">
+                <button
+                    @click="closeItem"
+                    class="rounded border px-4 py-2 text-sm"
+                >
+                    Close
+                </button>
             </div>
         </div>
     </div>

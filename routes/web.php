@@ -108,6 +108,9 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::post('/proposals/{proposal}/send', [ProposalController::class, 'send'])
         ->name('proposals.send');
 
+    Route::get('/proposals/{proposal}/download', [ProposalController::class, 'download'])
+        ->name('proposals.download');
+
     Route::post('/deals/{deal}/follow-ups/cancel', [DealFollowUpController::class, 'cancel']);
 
     Route::get('/activities', [ActivityController::class, 'index']);

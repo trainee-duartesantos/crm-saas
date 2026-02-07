@@ -87,7 +87,11 @@ class TenantInsightsController extends Controller
                 'ai_events_total' => $aiEventsTotal,
                 'last_activity_at' => $lastActivityAt,
             ],
-            'lastInsight' => $lastInsight?->metadata['message'] ?? null,
+            'lastInsight' => [
+                'message' => $lastInsight?->metadata['message'] ?? null,
+                'confidence' => $lastInsight?->metadata['confidence'] ?? null,
+                'generated_at' => $lastInsight?->created_at ?? null,
+            ],
             'engagementScore' => $engagementScore,
             'charts' => [
                 'activity' => [

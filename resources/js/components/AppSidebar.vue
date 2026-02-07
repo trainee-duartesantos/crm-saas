@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
+
 import {
     Sidebar,
     SidebarContent,
@@ -16,6 +17,7 @@ import { Link } from '@inertiajs/vue3';
 import {
     Briefcase,
     Building2,
+    Calendar,
     CheckSquare,
     Clock,
     CreditCard,
@@ -36,6 +38,7 @@ const coreNav: NavItem[] = [
     { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
     { title: 'Timeline', href: '/timeline', icon: Clock },
     { title: 'Activities', href: '/activities', icon: CheckSquare },
+    { title: 'Calendar', href: '/calendar', icon: Calendar },
 ];
 
 /* 🔹 CRM */

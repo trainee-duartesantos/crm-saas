@@ -130,4 +130,55 @@ class ActivityController extends Controller
 
         return back();
     }
+
+    public function calendar()
+    {
+        $this->authorize('viewAny', ActivityLog::class);
+
+        $tenantId = app('tenant')->id;
+
+        // Minimal: puxar atividades com due_at (quando existir) e fallback em created_at
+        // Inclui person/deal para enriquecer título (sem exageros)
+        $activities = Activity::query()
+            ->where('tenant_id', $tenantId)
+            ->with(['person', 'deal'])
+            ->latest()
+            ->limit(500)
+            ->get();
+
+        $events = $activities->map(function ($a) {
+            $start = $a->due_at ?? $a->created_at;
+
+            // End opcional (ex.: +30 min) para ficar “visível” em week/day view
+            $end = $a->due_at
+                ? optional($a->due_at)->copy()->addMinutes(30)
+                : null;
+
+            $who = $a->person
+                ? trim(($a->person->first_name ?? '') . ' ' . ($a->person->last_name ?? ''))
+                : null;
+
+            $deal = $a->deal?->title;
+
+            $suffix = collect([$who, $deal])->filter()->implode(' • ');
+
+            return [
+                'id' => $a->id,
+                'title' => $suffix ? "{$a->title} — {$suffix}" : $a->title,
+                'start' => optional($start)->toISOString(),
+                'end' => $end ? $end->toISOString() : null,
+                'allDay' => false,
+                'extendedProps' => [
+                    'type' => $a->type,
+                    'completed_at' => $a->completed_at,
+                ],
+                // opcional: ir para a página de activities (ou futuramente abrir modal)
+                'url' => '/activities',
+            ];
+        })->values();
+
+        return Inertia::render('calendar/Index', [
+            'events' => $events,
+        ]);
+    }
 }

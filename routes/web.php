@@ -122,6 +122,9 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::post('/ai/deals/{deal}/summary', [AIController::class, 'summarizeDeal'])
         ->name('ai.deal.summary');
 
+    Route::get('/calendar', [ActivityController::class, 'calendar'])
+        ->name('calendar.index');
+
     Route::get('/activities', [ActivityController::class, 'index']);
     Route::post('/activities', [ActivityController::class, 'store']);
     Route::post('/activities/{activity}/complete', [ActivityController::class, 'complete']);

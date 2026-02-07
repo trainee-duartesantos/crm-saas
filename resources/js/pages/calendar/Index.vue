@@ -2,6 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { computed, ref } from 'vue';
 
+import type { CalendarOptions, EventApi } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -22,7 +23,14 @@ const props = defineProps<{
 
 const calendarRef = ref<any>(null);
 
-const calendarOptions = computed(() => ({
+const selectedEvent = ref<EventApi | null>(null);
+const popoverPos = ref({ x: 0, y: 0 });
+
+const closePopover = () => {
+    selectedEvent.value = null;
+};
+
+const calendarOptions = computed<CalendarOptions>(() => ({
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
     initialView: 'dayGridMonth',
 
@@ -49,13 +57,17 @@ const calendarOptions = computed(() => ({
         hour12: false,
     },
 
-    eventClick: (info: any) => {
-        if (info.event.id) {
-            window.location.href = `/activities/${info.event.id}`;
-        }
+    eventClick(info) {
+        info.jsEvent.preventDefault();
+
+        selectedEvent.value = info.event;
+        popoverPos.value = {
+            x: info.jsEvent.pageX,
+            y: info.jsEvent.pageY,
+        };
     },
 
-    eventDidMount: (info: any) => {
+    eventDidMount(info) {
         info.el.title = `${info.event.title}\n${info.timeText ?? ''}`;
     },
 
@@ -93,6 +105,50 @@ const calendarOptions = computed(() => ({
 
         <div class="rounded-xl border bg-white p-6 shadow-sm">
             <FullCalendar ref="calendarRef" :options="calendarOptions" />
+            <div
+                v-if="selectedEvent"
+                class="fixed z-50 w-72 rounded-lg border bg-white p-4 shadow-lg"
+                :style="{
+                    top: popoverPos.y + 'px',
+                    left: popoverPos.x + 'px',
+                }"
+            >
+                <div class="flex items-start justify-between gap-2">
+                    <div class="font-semibold text-gray-900">
+                        {{ selectedEvent.title }}
+                    </div>
+
+                    <button
+                        class="text-gray-400 hover:text-gray-600"
+                        @click="closePopover"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div class="mt-2 text-sm text-gray-600">
+                    {{ selectedEvent.start?.toLocaleString() }}
+                    <span v-if="selectedEvent.end">
+                        → {{ selectedEvent.end.toLocaleString() }}
+                    </span>
+                </div>
+
+                <div class="mt-4 flex justify-end gap-2">
+                    <button
+                        class="rounded border px-3 py-1 text-sm"
+                        @click="closePopover"
+                    >
+                        Close
+                    </button>
+
+                    <a
+                        :href="`/activities/${selectedEvent.id}`"
+                        class="rounded bg-indigo-600 px-3 py-1 text-sm text-white"
+                    >
+                        Open activity
+                    </a>
+                </div>
+            </div>
         </div>
 
         <div

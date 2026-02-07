@@ -131,28 +131,6 @@ onMounted(() => {
     <div class="mx-auto max-w-6xl space-y-6">
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-semibold">Tenant Insights</h1>
-            <div class="flex gap-2">
-                <a
-                    href="/timeline"
-                    class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
-                    >Timeline</a
-                >
-                <a
-                    href="/deals"
-                    class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
-                    >Pipeline</a
-                >
-                <a
-                    href="/people"
-                    class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
-                    >People</a
-                >
-                <a
-                    href="/activities"
-                    class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
-                    >Activities</a
-                >
-            </div>
         </div>
 
         <!-- KPIs -->

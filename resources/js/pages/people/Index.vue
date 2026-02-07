@@ -45,29 +45,6 @@ const submit = () => {
         <!-- Header -->
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-semibold">People</h1>
-
-            <div class="flex gap-2">
-                <a
-                    href="/timeline"
-                    class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
-                    >Timeline</a
-                >
-                <a
-                    href="/insights"
-                    class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
-                    >Insights</a
-                >
-                <a
-                    href="/deals"
-                    class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
-                    >Pipeline</a
-                >
-                <a
-                    href="/activities"
-                    class="rounded border px-3 py-2 text-sm hover:bg-gray-50"
-                    >Activities</a
-                >
-            </div>
         </div>
 
         <!-- Create person -->

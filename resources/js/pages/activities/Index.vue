@@ -89,21 +89,6 @@ const suggestFollowUps = () => {
         <!-- Header -->
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-semibold">Activities</h1>
-
-            <div class="flex gap-2">
-                <a href="/timeline" class="rounded border px-3 py-2 text-sm"
-                    >Timeline</a
-                >
-                <a href="/deals" class="rounded border px-3 py-2 text-sm"
-                    >Pipeline</a
-                >
-                <a href="/people" class="rounded border px-3 py-2 text-sm"
-                    >People</a
-                >
-                <a href="/insights" class="rounded border px-3 py-2 text-sm"
-                    >Insights</a
-                >
-            </div>
         </div>
 
         <!-- Calendar overview -->

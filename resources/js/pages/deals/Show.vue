@@ -29,6 +29,7 @@ const props = defineProps<{
     timeline: any[];
     timeline_counts: Record<string, number>;
     followUp?: any;
+    products: any[];
 }>();
 
 /* -----------------------
@@ -57,6 +58,25 @@ const statusColor = computed(() => {
             return 'bg-gray-100 text-gray-700';
     }
 });
+
+const productForm = ref({
+    product_id: '',
+    quantity: 1,
+    unit_price: '',
+});
+
+const addProduct = () => {
+    router.post(`/deals/${props.deal.id}/products`, productForm.value, {
+        preserveScroll: true,
+        onSuccess: () => {
+            productForm.value = {
+                product_id: '',
+                quantity: 1,
+                unit_price: '',
+            };
+        },
+    });
+};
 
 const humanizeKey = (key: string) => {
     return key.replaceAll('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase());
@@ -229,6 +249,16 @@ watch(activeModal, (v) => {
     document.body.style.overflow = v ? 'hidden' : '';
 });
 
+watch(
+    () => productForm.value.product_id,
+    (id) => {
+        const p = props.products.find((p) => p.id == id);
+        if (p) {
+            productForm.value.unit_price = p.unit_price ?? '';
+        }
+    },
+);
+
 const generatingSummary = ref(false);
 
 const generateAiSummary = () => {
@@ -339,6 +369,109 @@ onBeforeUnmount(() => {
                             <div class="font-medium">
                                 {{ deal.last_activity_at ?? '—' }}
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-lg border bg-white p-5">
+                    <h2 class="mb-3 text-sm font-semibold text-gray-700">
+                        Products
+                    </h2>
+
+                    <table
+                        v-if="deal.products.length"
+                        class="w-full border text-sm"
+                    >
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-2 text-left">Product</th>
+                                <th class="p-2 text-right">Qty</th>
+                                <th class="p-2 text-right">Unit €</th>
+                                <th class="p-2 text-right">Total €</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="p in deal.products" :key="p.id">
+                                <td class="p-2">{{ p.name }}</td>
+                                <td class="p-2 text-right">
+                                    {{ p.pivot.quantity }}
+                                </td>
+                                <td class="p-2 text-right">
+                                    € {{ p.pivot.unit_price }}
+                                </td>
+                                <td class="p-2 text-right">
+                                    €
+                                    {{
+                                        (
+                                            p.pivot.quantity *
+                                            p.pivot.unit_price
+                                        ).toFixed(2)
+                                    }}
+                                </td>
+                                <td class="p-2 text-right">
+                                    <button
+                                        class="text-red-600 hover:underline"
+                                        @click.stop="
+                                            router.delete(
+                                                `/deals/${deal.id}/products/${p.id}`,
+                                                { preserveScroll: true },
+                                            )
+                                        "
+                                    >
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div v-else class="text-sm text-gray-500">
+                        No products added yet.
+                    </div>
+                    <div class="mt-4 rounded border bg-gray-50 p-4">
+                        <h3 class="mb-2 text-sm font-semibold text-gray-700">
+                            Add product
+                        </h3>
+
+                        <div class="grid grid-cols-1 gap-3 md:grid-cols-4">
+                            <select
+                                v-model="productForm.product_id"
+                                class="rounded border px-3 py-2 text-sm"
+                            >
+                                <option value="">Select product</option>
+                                <option
+                                    v-for="p in products"
+                                    :key="p.id"
+                                    :value="p.id"
+                                >
+                                    {{ p.name }}
+                                </option>
+                            </select>
+
+                            <input
+                                v-model="productForm.quantity"
+                                type="number"
+                                min="1"
+                                class="rounded border px-3 py-2 text-sm"
+                                placeholder="Qty"
+                            />
+
+                            <input
+                                v-model="productForm.unit_price"
+                                type="number"
+                                step="0.01"
+                                class="rounded border px-3 py-2 text-sm"
+                                placeholder="Unit €"
+                            />
+
+                            <button
+                                @click="addProduct"
+                                :disabled="!productForm.product_id"
+                                class="rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                            >
+                                Add
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -20,6 +20,7 @@ use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\DealFollowUpController;
 use App\Http\Controllers\ProductStatsController;
+use App\Http\Controllers\DealProductController;
 
 
 Route::get('/', function () {
@@ -99,6 +100,12 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::get('/deals/{deal}', [DealController::class, 'show'])
         ->name('deals.show');
+
+    Route::post('/deals/{deal}/products', [DealProductController::class, 'store']);
+    Route::delete('/deal-products/{dealProduct}', [DealProductController::class, 'destroy']);
+
+    Route::delete('/deals/{deal}/products/{product}', [DealController::class, 'removeProduct'])
+        ->name('deals.products.remove');
 
     Route::get('/tenant', [TenantController::class, 'index'])
         ->name('tenant.index');

@@ -9,6 +9,7 @@ use Inertia\Inertia;
 use App\Models\Activity;
 use App\Models\DealFollowUp;
 use App\Services\DealTimelineBuilder;
+use App\Models\Product;
 
 class DealController extends Controller
 {
@@ -98,7 +99,12 @@ class DealController extends Controller
 
         abort_if($deal->tenant_id !== app('tenant')->id, 403);
 
-        $deal->load(['person', 'entity']);
+        $deal->load([
+            'person',
+            'entity',
+            'products',
+        ]);
+
 
         $types = request()->filled('types')
             ? explode(',', request('types'))
@@ -114,11 +120,17 @@ class DealController extends Controller
             ->latest('next_run_at')
             ->first();
 
+        $products = Product::query()
+            ->where('tenant_id', app('tenant')->id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'unit_price']);
+
         return Inertia::render('deals/Show', [
             'deal' => $deal,
             'timeline' => $timeline['items'],
             'timeline_counts' => $timeline['counts'],
             'followUp' => $followUp,
+            'products' => $products,
         ]);
     }
 
@@ -149,5 +161,18 @@ class DealController extends Controller
             'counts' => $timeline['counts'],
             'followUp' => $followUp,
         ]);
+    }
+
+    public function removeProduct(Deal $deal, Product $product)
+    {
+        abort_if($deal->tenant_id !== app('tenant')->id, 403);
+
+        $deal->products()->detach($product->id);
+
+        activity_log('deal.product.removed', $deal, [
+            'product' => $product->name,
+        ]);
+
+        return back();
     }
 }

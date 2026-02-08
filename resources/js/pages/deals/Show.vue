@@ -99,6 +99,46 @@ const formatDate = (date: string) => {
 };
 
 /* -----------------------
+   Quick activity (deal)
+----------------------- */
+const quickActivity = ref({
+    type: 'task',
+    title: '',
+    notes: '',
+    due_at: '',
+});
+
+const creatingActivity = ref(false);
+
+const createQuickActivity = () => {
+    if (!quickActivity.value.title) return;
+
+    creatingActivity.value = true;
+
+    router.post(
+        '/activities',
+        {
+            ...quickActivity.value,
+            deal_id: props.deal.id,
+            due_at: quickActivity.value.due_at || null,
+        },
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                creatingActivity.value = false;
+                quickActivity.value = {
+                    type: 'task',
+                    title: '',
+                    notes: '',
+                    due_at: '',
+                };
+                fetchTimeline();
+            },
+        },
+    );
+};
+
+/* -----------------------
    Timeline filters
 ----------------------- */
 const filters = ref<string[]>([]);
@@ -382,6 +422,67 @@ onBeforeUnmount(() => {
                         }}
                     </div>
                 </div>
+
+                <!-- Quick activity -->
+                <div class="rounded-lg border bg-white p-5">
+                    <h2 class="mb-3 text-sm font-semibold text-gray-700">
+                        Quick activity
+                    </h2>
+
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-6">
+                        <div>
+                            <select
+                                v-model="quickActivity.type"
+                                class="w-full rounded border px-3 py-2 text-sm"
+                            >
+                                <option value="task">Task</option>
+                                <option value="call">Call</option>
+                                <option value="meeting">Meeting</option>
+                                <option value="email">Email</option>
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-3">
+                            <input
+                                v-model="quickActivity.title"
+                                class="w-full rounded border px-3 py-2 text-sm"
+                                placeholder="Follow up with client"
+                            />
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <input
+                                v-model="quickActivity.due_at"
+                                type="datetime-local"
+                                class="w-full rounded border px-3 py-2 text-sm"
+                            />
+                        </div>
+
+                        <div class="md:col-span-6">
+                            <textarea
+                                v-model="quickActivity.notes"
+                                rows="2"
+                                class="w-full rounded border px-3 py-2 text-sm"
+                                placeholder="Notes (optional)"
+                            />
+                        </div>
+
+                        <div class="flex justify-end md:col-span-6">
+                            <button
+                                @click="createQuickActivity"
+                                :disabled="creatingActivity"
+                                class="rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                            >
+                                {{
+                                    creatingActivity
+                                        ? 'Creating…'
+                                        : 'Create activity'
+                                }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Timeline -->
                 <div class="rounded-lg border bg-white p-5">
                     <h2 class="mb-4 text-sm font-semibold text-gray-700">

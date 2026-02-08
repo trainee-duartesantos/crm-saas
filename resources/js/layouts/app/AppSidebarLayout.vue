@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AIChat from '@/Components/AIChat.vue'; // 🤖 AI CHAT
+import AIChat from '@/components/AIChat.vue'; // 🤖 AI CHAT
 import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';

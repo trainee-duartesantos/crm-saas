@@ -19,6 +19,7 @@ use App\Http\Controllers\BillingController;
 use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\DealFollowUpController;
+use App\Http\Controllers\ProductStatsController;
 
 
 Route::get('/', function () {
@@ -71,6 +72,9 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::get('/insights', [TenantInsightsController::class, 'index'])
         ->name('insights.index');
+
+    Route::get('/insights/products', [ProductStatsController::class, 'index'])
+        ->name('insights.products');
 
     Route::post('/ai/tenant/insight', [AIController::class, 'generateTenantInsight'])
         ->name('ai.tenant.insight');

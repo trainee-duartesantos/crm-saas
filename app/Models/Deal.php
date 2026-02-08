@@ -62,4 +62,17 @@ class Deal extends Model
     {
         return $this->hasMany(DealFollowUp::class);
     }
+
+    public function dealProducts()
+    {
+        return $this->hasMany(DealProduct::class);
+    }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'deal_products')
+            ->withPivot(['quantity', 'unit_price'])
+            ->withTimestamps();
+    }
+
 }

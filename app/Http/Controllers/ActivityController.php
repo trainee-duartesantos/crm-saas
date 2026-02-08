@@ -181,4 +181,14 @@ class ActivityController extends Controller
             'events' => $events,
         ]);
     }
+
+    public function show(\App\Models\Activity $activity)
+    {
+        abort_if($activity->tenant_id !== app('tenant')->id, 403);
+
+        return inertia('activities/Show', [
+            'activity' => $activity->load(['person', 'deal']),
+        ]);
+    }
+
 }

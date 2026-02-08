@@ -45,11 +45,14 @@ const calendarOptions = computed<CalendarOptions>(() => ({
     selectable: true,
     editable: false,
 
-    events: props.events,
+    events: props.events.map((event) => ({
+        ...event,
+        end: event.end || undefined,
+    })) as any,
 
     expandRows: true,
     dayMaxEventRows: false,
-    eventDisplay: 'block',
+    eventDisplay: 'block' as const,
 
     eventTimeFormat: {
         hour: '2-digit',

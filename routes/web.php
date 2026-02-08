@@ -125,6 +125,10 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::get('/calendar', [ActivityController::class, 'calendar'])
         ->name('calendar.index');
 
+    Route::get('/activities/{activity}', [ActivityController::class, 'show'])
+        ->name('activities.show');
+
+
     Route::get('/activities', [ActivityController::class, 'index']);
     Route::post('/activities', [ActivityController::class, 'store']);
     Route::post('/activities/{activity}/complete', [ActivityController::class, 'complete']);

@@ -21,6 +21,7 @@ use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\DealFollowUpController;
 use App\Http\Controllers\ProductStatsController;
 use App\Http\Controllers\DealProductController;
+use App\Http\Controllers\ProductController;
 
 
 Route::get('/', function () {
@@ -106,6 +107,9 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     Route::delete('/deals/{deal}/products/{product}', [DealController::class, 'removeProduct'])
         ->name('deals.products.remove');
+
+    Route::get('/products/{product}', [ProductController::class, 'show'])
+        ->name('products.show');
 
     Route::get('/tenant', [TenantController::class, 'index'])
         ->name('tenant.index');

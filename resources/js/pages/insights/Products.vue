@@ -35,8 +35,14 @@ defineProps<{
             <tbody>
                 <tr v-for="row in stats" :key="row.product_id">
                     <td class="border px-3 py-2">
-                        {{ row.product_name }}
+                        <a
+                            :href="`/products/${row.product_id}`"
+                            class="text-indigo-600 hover:underline"
+                        >
+                            {{ row.product_name }}
+                        </a>
                     </td>
+
                     <td class="border px-3 py-2 text-right">
                         {{ row.total_units }}
                     </td>

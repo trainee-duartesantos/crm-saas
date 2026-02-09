@@ -1,6 +1,24 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { computed } from 'vue';
+import {
+    CategoryScale,
+    Chart,
+    LinearScale,
+    LineController,
+    LineElement,
+    PointElement,
+    Tooltip,
+} from 'chart.js';
+import { computed, onMounted, ref, watch } from 'vue';
+
+Chart.register(
+    LineController,
+    LineElement,
+    PointElement,
+    LinearScale,
+    CategoryScale,
+    Tooltip,
+);
 
 defineOptions({ layout: AppLayout });
 
@@ -11,6 +29,9 @@ const props = defineProps<{
     margin: number | null;
 }>();
 
+/* -----------------------
+   Global metrics
+----------------------- */
 const totalUnits = computed(() =>
     props.product.deals.reduce(
         (sum: number, deal: any) => sum + deal.pivot.quantity,
@@ -25,6 +46,56 @@ const totalValue = computed(() =>
         0,
     ),
 );
+
+/* -----------------------
+   Chart.js
+----------------------- */
+const chartRef = ref<HTMLCanvasElement | null>(null);
+let chart: Chart | null = null;
+
+const renderChart = () => {
+    if (!chartRef.value || props.timeline.length === 0) return;
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(chartRef.value, {
+        type: 'line',
+        data: {
+            labels: props.timeline.map((t) => t.month),
+            datasets: [
+                {
+                    label: 'Revenue (€)',
+                    data: props.timeline.map((t) => t.value),
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79,70,229,0.15)',
+                    tension: 0.35,
+                    fill: true,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `€ ${Number(ctx.raw).toFixed(2)}`,
+                    },
+                },
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: (v) => `€ ${v}`,
+                    },
+                },
+            },
+        },
+    });
+};
+
+onMounted(renderChart);
+watch(() => props.timeline, renderChart, { deep: true });
 </script>
 
 <template>
@@ -82,7 +153,7 @@ const totalValue = computed(() =>
             </div>
         </div>
 
-        <!-- Timeline -->
+        <!-- Timeline chart -->
         <div class="rounded border bg-white p-5">
             <h3 class="mb-3 text-sm font-semibold text-gray-700">
                 Revenue over time
@@ -92,7 +163,12 @@ const totalValue = computed(() =>
                 No historical data yet.
             </div>
 
-            <ul v-else class="space-y-2 text-sm">
+            <div v-else class="h-64">
+                <canvas ref="chartRef"></canvas>
+            </div>
+
+            <!-- fallback list (optional, keeps UX strong) -->
+            <ul class="mt-4 space-y-1 text-xs text-gray-500">
                 <li
                     v-for="row in timeline"
                     :key="row.month"

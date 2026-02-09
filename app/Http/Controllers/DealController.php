@@ -59,7 +59,7 @@ class DealController extends Controller
 
     public function move(Request $request, Deal $deal)
     {
-        $this->authorize('viewAny', ActivityLog::class);
+        $this->authorize('update', $deal);
 
         $request->validate([
             'status' => ['required', 'in:' . implode(',', Deal::STATUSES)],
@@ -127,6 +127,11 @@ class DealController extends Controller
 
         return Inertia::render('deals/Show', [
             'deal' => $deal,
+            'can' => [
+                'update' => auth()->user()->can('update', $deal),
+                'delete' => auth()->user()->can('delete', $deal),
+                'markAsWon' => auth()->user()->can('markAsWon', $deal),
+            ],
             'timeline' => $timeline['items'],
             'timeline_counts' => $timeline['counts'],
             'followUp' => $followUp,
@@ -165,6 +170,8 @@ class DealController extends Controller
 
     public function removeProduct(Deal $deal, Product $product)
     {
+        $this->authorize('update', $deal);
+
         abort_if($deal->tenant_id !== app('tenant')->id, 403);
 
         $deal->products()->detach($product->id);
@@ -175,4 +182,30 @@ class DealController extends Controller
 
         return back();
     }
+
+    public function update(Request $request, Deal $deal)
+    {
+        $this->authorize('update', $deal);
+
+        $deal->update($request->validated());
+
+        return back();
+    }
+
+    public function destroy(Deal $deal)
+    {
+        $this->authorize('delete', $deal);
+
+        $deal->delete();
+
+        return redirect()->route('deals.index');
+    }
+
+    public function markAsWon(Deal $deal)
+    {
+        $this->authorize('markAsWon', $deal);
+
+        $deal->update(['status' => 'won']);
+    }
+
 }

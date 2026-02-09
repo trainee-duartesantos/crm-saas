@@ -30,6 +30,11 @@ const props = defineProps<{
     timeline_counts: Record<string, number>;
     followUp?: any;
     products: any[];
+    can: {
+        update: boolean;
+        delete: boolean;
+        markAsWon: boolean;
+    };
 }>();
 
 /* -----------------------
@@ -411,6 +416,7 @@ onBeforeUnmount(() => {
                                 </td>
                                 <td class="p-2 text-right">
                                     <button
+                                        v-if="props.can.update"
                                         class="text-red-600 hover:underline"
                                         @click.stop="
                                             router.delete(
@@ -486,6 +492,7 @@ onBeforeUnmount(() => {
                     </div>
 
                     <button
+                        v-if="props.can.update"
                         @click="
                             router.post(`/deals/${deal.id}/follow-ups/cancel`)
                         "
@@ -788,7 +795,7 @@ onBeforeUnmount(() => {
 
                     <div class="space-y-2">
                         <button
-                            v-if="deal.status !== 'won'"
+                            v-if="props.can.markAsWon && deal.status !== 'won'"
                             @click="move('won')"
                             class="w-full rounded bg-emerald-600 px-4 py-2 text-sm text-white"
                         >
@@ -796,7 +803,7 @@ onBeforeUnmount(() => {
                         </button>
 
                         <button
-                            v-if="deal.status !== 'lost'"
+                            v-if="props.can.update && deal.status !== 'lost'"
                             @click="move('lost')"
                             class="w-full rounded bg-red-600 px-4 py-2 text-sm text-white"
                         >

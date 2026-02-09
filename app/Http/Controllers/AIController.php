@@ -144,9 +144,11 @@ class AIController extends Controller
         AIService $ai,
         ActivityLogger $logger
     ) {
-        $this->authorize('viewAny', ActivityLog::class);
+        abort_unless(auth()->user()->isOwner(), 403);
 
         $tenant = app('tenant');
+
+        $contextPrefix = "You are advising the OWNER of a SaaS CRM. Focus on revenue, growth, adoption, and risks.\n\n";
 
         // 📊 Métricas reais
         $metrics = [
@@ -172,14 +174,13 @@ class AIController extends Controller
     TEXT;
 
         // 🤖 Insight executivo
-        $message = $ai->askExecutiveInsight($context);
+        $message = $ai->askExecutiveInsight($contextPrefix . $context);
 
-        // 📝 Guardar na timeline
         $logger->log(
             action: 'ai.tenant.insight',
             metadata: [
                 'message' => $message,
-                'metrics' => $metrics,
+                'confidence' => 0.85,
             ]
         );
 
@@ -190,9 +191,11 @@ class AIController extends Controller
         AIService $ai,
         ActivityLogger $logger
     ) {
-        $this->authorize('viewAny', ActivityLog::class);
+        abort_unless(auth()->user()->isOwner(), 403);
 
         $tenant = app('tenant');
+
+        $contextPrefix = "You are advising the OWNER of a SaaS CRM. Focus on revenue, growth, adoption, and risks.\n\n";
 
         // 🔍 Métricas simples para decisão
         $invitesPending = UserInvite::query()
@@ -205,19 +208,19 @@ class AIController extends Controller
             ->where('action', 'like', 'ai.%')
             ->count();
 
+        $context = <<<TEXT
+        Tenant metrics:
+        - Pending invitations: {$invitesPending}
+        - Total AI events so far: {$aiEvents}
+        TEXT;
         // 🧠 AI decide próxima ação
-        $message = $ai->generateTenantInsight([
-            'invites_pending' => $invitesPending,
-            'ai_events_total' => $aiEvents,
-        ]);
+        $message = $ai->askExecutiveInsight($contextPrefix . $context);
 
-        // 📝 Guardar na timeline
         $logger->log(
-            action: 'ai.recommendation.next_action',
+            action: 'ai.tenant.next_action',
             metadata: [
                 'message' => $message,
-                'invites_pending' => $invitesPending,
-                'ai_events_total' => $aiEvents,
+                'confidence' => 0.8,
             ]
         );
 

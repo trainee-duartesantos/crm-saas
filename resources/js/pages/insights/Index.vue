@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AIChat from '@/components/AIChat.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
 import {
@@ -14,9 +15,7 @@ import {
 } from 'chart.js';
 import { onMounted, ref } from 'vue';
 
-defineOptions({
-    layout: AppLayout,
-});
+defineOptions({ layout: AppLayout });
 
 Chart.register(
     DoughnutController,
@@ -30,33 +29,34 @@ Chart.register(
 );
 
 const props = defineProps<{
-    metrics: {
-        invites_total: number;
-        invites_accepted: number;
-        invites_pending: number;
-        ai_events_total: number;
-        last_activity_at: string | null;
-    };
-    lastInsight: {
-        message: string;
-        confidence?: number;
-        generated_at?: string;
-    } | null;
+    metrics: any;
+    lastInsight: any | null;
     engagementScore: 'low' | 'moderate' | 'high';
-    charts: {
-        activity: { labels: string[]; data: number[] };
-        invites: { labels: string[]; data: number[] };
+    charts: any;
+    can: {
+        products: boolean;
+        deals: boolean;
+        revenue: boolean;
+        ai_generate: boolean;
+        ai_next_action: boolean;
     };
 }>();
 
 const invitesCanvas = ref<HTMLCanvasElement | null>(null);
 const activityCanvas = ref<HTMLCanvasElement | null>(null);
+
 const generateInsight = () => {
+    if (!props.can.ai_generate) return;
     router.post('/ai/tenant/insight');
 };
 
+const generateNextAction = () => {
+    if (!props.can.ai_next_action) return;
+    router.post('/ai/tenant/next-action');
+};
+
 const copyInsight = () => {
-    if (!props.lastInsight) return;
+    if (!props.lastInsight?.message) return;
     navigator.clipboard.writeText(props.lastInsight.message);
 };
 
@@ -236,17 +236,19 @@ onMounted(() => {
                 engagement and next best actions.
             </div>
 
-            <!-- 🎯 What should I do next -->
+            <!-- AI INSIGHT ACTIONS -->
             <div class="mt-4 flex flex-wrap gap-3">
                 <button
-                    @click="router.post('/ai/tenant/insight')"
+                    v-if="can.ai_generate"
+                    @click="generateInsight"
                     class="rounded bg-indigo-600 px-4 py-2 text-white"
                 >
                     Generate insight
                 </button>
 
                 <button
-                    @click="router.post('/ai/tenant/next-action')"
+                    v-if="can.ai_next_action"
+                    @click="generateNextAction"
                     class="rounded bg-emerald-600 px-4 py-2 text-white"
                 >
                     🤖 What should I do next?

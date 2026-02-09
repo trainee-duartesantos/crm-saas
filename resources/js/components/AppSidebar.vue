@@ -59,28 +59,35 @@ const crmNav: NavItem[] = [
 /* =======================
    Insights (SaaS-style)
 ======================= */
-const insightsNav: NavItem[] = [
-    {
-        title: 'Overview',
-        href: '/insights',
-        icon: Sparkles,
-    },
-    {
-        title: 'Products',
-        href: '/insights/products',
-        icon: BarChart3,
-    },
-    {
-        title: 'Deals',
-        href: '/insights/deals',
-        icon: TrendingUp,
-    },
-    {
+const insightsNav: NavItem[] = [];
+
+if (props.role === 'admin' || props.role === 'owner') {
+    insightsNav.push(
+        {
+            title: 'Overview',
+            href: '/insights',
+            icon: Sparkles,
+        },
+        {
+            title: 'Products',
+            href: '/insights/products',
+            icon: BarChart3,
+        },
+        {
+            title: 'Deals',
+            href: '/insights/deals',
+            icon: TrendingUp,
+        },
+    );
+}
+
+if (props.role === 'owner') {
+    insightsNav.push({
         title: 'Revenue',
         href: '/insights/revenue',
         icon: LineChart,
-    },
-];
+    });
+}
 
 /* =======================
    Administration

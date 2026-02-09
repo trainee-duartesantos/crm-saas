@@ -178,15 +178,18 @@ Route::middleware(['auth', 'tenant'])->group(function () {
             return Inertia::render('insights/Deals');
         })->name('insights.deals');
 
-        Route::get('/insights/revenue', function () {
-            return Inertia::render('insights/Revenue');
-        })->name('insights.revenue');
+        // ✅ Revenue só Owner
+        Route::middleware('role:owner')->group(function () {
+            Route::get('/insights/revenue', function () {
+                return Inertia::render('insights/Revenue');
+            })->name('insights.revenue');
 
-        Route::post('/ai/tenant/insight', [AIController::class, 'generateTenantInsight'])
-            ->name('ai.tenant.insight');
+            Route::post('/ai/tenant/insight', [AIController::class, 'generateTenantInsight'])
+                ->name('ai.tenant.insight');
 
-        Route::post('/ai/tenant/next-action', [AIController::class, 'recommendNextAction'])
-            ->name('ai.tenant.next-action');
+            Route::post('/ai/tenant/next-action', [AIController::class, 'recommendNextAction'])
+                ->name('ai.tenant.next-action');
+        });
     });
 
     /*

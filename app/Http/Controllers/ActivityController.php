@@ -88,11 +88,13 @@ class ActivityController extends Controller
             'due_at' => ['nullable', 'date'],
             'person_id' => ['nullable', 'integer'],
             'deal_id' => ['nullable', 'integer'],
+            'assigned_to' => ['nullable', 'exists:users,id'],
         ]);
 
         $activity = Activity::create([
             'tenant_id' => app('tenant')->id,
             'created_by' => auth()->id(),
+            'assigned_to' => $request->input('assigned_to', auth()->id()),
             'type' => $data['type'],
             'title' => $data['title'],
             'notes' => $data['notes'] ?? null,

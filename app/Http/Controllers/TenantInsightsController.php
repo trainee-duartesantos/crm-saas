@@ -4,36 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\UserInvite;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class TenantInsightsController extends Controller
 {
     public function index()
     {
-        // Reutilizamos a mesma policy do ActivityLog (simples e consistente)
-        $this->authorize('viewAny', ActivityLog::class);
 
         $tenant = app('tenant');
 
-        // ✅ Invites
-        $invitesTotal = UserInvite::query()
-            ->where('tenant_id', $tenant->id)
-            ->count();
+        /* ======================
+         | Metrics
+         ====================== */
 
-        $invitesAccepted = UserInvite::query()
-            ->where('tenant_id', $tenant->id)
+        $invitesTotal = UserInvite::where('tenant_id', $tenant->id)->count();
+        $invitesAccepted = UserInvite::where('tenant_id', $tenant->id)
             ->whereNotNull('accepted_at')
             ->count();
-
-        $invitesPending = UserInvite::query()
-            ->where('tenant_id', $tenant->id)
+        $invitesPending = UserInvite::where('tenant_id', $tenant->id)
             ->whereNull('accepted_at')
             ->count();
 
-        // ✅ Activity volume (últimos 14 dias)
         $activityByDay = ActivityLog::query()
-            ->selectRaw("DATE(created_at) as day, COUNT(*) as total")
+            ->selectRaw('DATE(created_at) as day, COUNT(*) as total')
             ->where('tenant_id', $tenant->id)
             ->where('created_at', '>=', now()->subDays(14))
             ->groupBy('day')
@@ -44,35 +38,22 @@ class TenantInsightsController extends Controller
             ->pluck('day')
             ->map(fn ($d) => \Carbon\Carbon::parse($d)->format('d M'))
             ->values();
+
         $activityTotals = $activityByDay->pluck('total')->values();
 
-        // ✅ AI events (quantos logs "ai.*")
-        $aiEventsTotal = ActivityLog::query()
-            ->where('tenant_id', $tenant->id)
+        $aiEventsTotal = ActivityLog::where('tenant_id', $tenant->id)
             ->where('action', 'like', 'ai.%')
             ->count();
 
-        // ✅ último evento (saúde do tenant)
-        $lastActivityAt = ActivityLog::query()
-            ->where('tenant_id', $tenant->id)
+        $lastActivityAt = ActivityLog::where('tenant_id', $tenant->id)
             ->latest()
             ->value('created_at');
 
-                    // 🧠 Último AI Executive Insight
-        $lastInsight = ActivityLog::query()
-            ->where('tenant_id', $tenant->id)
+        $lastInsight = ActivityLog::where('tenant_id', $tenant->id)
             ->where('action', 'ai.tenant.insight')
             ->latest()
             ->first();
 
-        $recentInsights = ActivityLog::query()
-            ->where('tenant_id', $tenant->id)
-            ->where('action', 'ai.tenant.insight')
-            ->latest()
-            ->limit(3)
-            ->get();
-
-        // 🚦 Engagement score simples e defensável
         $engagementScore = match (true) {
             $invitesPending > 5 => 'low',
             $invitesPending > 2 => 'moderate',
@@ -87,11 +68,13 @@ class TenantInsightsController extends Controller
                 'ai_events_total' => $aiEventsTotal,
                 'last_activity_at' => $lastActivityAt,
             ],
-            'lastInsight' => [
-                'message' => $lastInsight?->metadata['message'] ?? null,
-                'confidence' => $lastInsight?->metadata['confidence'] ?? null,
-                'generated_at' => $lastInsight?->created_at ?? null,
-            ],
+            'lastInsight' => $lastInsight
+                ? [
+                    'message' => $lastInsight->metadata['message'] ?? null,
+                    'confidence' => $lastInsight->metadata['confidence'] ?? null,
+                    'generated_at' => $lastInsight->created_at,
+                ]
+                : null,
             'engagementScore' => $engagementScore,
             'charts' => [
                 'activity' => [
@@ -102,6 +85,15 @@ class TenantInsightsController extends Controller
                     'labels' => ['Accepted', 'Pending'],
                     'data' => [$invitesAccepted, $invitesPending],
                 ],
+            ],
+
+            // 👇 IMPORTANTÍSSIMO para o frontend
+            'can' => [
+                'products' => auth()->user()->can('insights.products'),
+                'deals' => auth()->user()->can('insights.deals'),
+                'revenue' => auth()->user()->can('insights.revenue'),
+                'ai_generate' => auth()->user()->can('insights.ai.generate'),
+                'ai_next_action' => auth()->user()->can('insights.ai.next-action'),
             ],
         ]);
     }

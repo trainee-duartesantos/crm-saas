@@ -47,4 +47,9 @@ class Activity extends Model
     {
         return !is_null($this->completed_at);
     }
+
+    public function assignee()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
 }

@@ -11,10 +11,12 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 
 import {
+    BarChart3,
     Briefcase,
     Building2,
     Calendar,
@@ -22,8 +24,10 @@ import {
     Clock,
     CreditCard,
     LayoutGrid,
+    LineChart,
     Shield,
     Sparkles,
+    TrendingUp,
     Users,
 } from 'lucide-vue-next';
 
@@ -33,7 +37,9 @@ const props = defineProps<{
     role: 'user' | 'admin' | 'owner';
 }>();
 
-/* 🔹 Core */
+/* =======================
+   Core
+======================= */
 const coreNav: NavItem[] = [
     { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
     { title: 'Timeline', href: '/timeline', icon: Clock },
@@ -41,19 +47,44 @@ const coreNav: NavItem[] = [
     { title: 'Calendar', href: '/calendar', icon: Calendar },
 ];
 
-/* 🔹 CRM */
+/* =======================
+   CRM
+======================= */
 const crmNav: NavItem[] = [
     { title: 'Entities', href: '/entities', icon: Building2 },
     { title: 'People', href: '/people', icon: Users },
     { title: 'Deals', href: '/deals', icon: Briefcase },
 ];
 
-/* 🔹 AI */
-const aiNav: NavItem[] = [
-    { title: 'Insights', href: '/insights', icon: Sparkles },
+/* =======================
+   Insights (SaaS-style)
+======================= */
+const insightsNav: NavItem[] = [
+    {
+        title: 'Overview',
+        href: '/insights',
+        icon: Sparkles,
+    },
+    {
+        title: 'Products',
+        href: '/insights/products',
+        icon: BarChart3,
+    },
+    {
+        title: 'Deals',
+        href: '/insights/deals',
+        icon: TrendingUp,
+    },
+    {
+        title: 'Revenue',
+        href: '/insights/revenue',
+        icon: LineChart,
+    },
 ];
 
-/* 🔹 Admin */
+/* =======================
+   Administration
+======================= */
 const adminNav: NavItem[] = [];
 
 if (props.role === 'admin' || props.role === 'owner') {
@@ -91,7 +122,7 @@ if (props.role === 'owner') {
         <SidebarContent>
             <NavMain label="Core" :items="coreNav" />
             <NavMain label="CRM" :items="crmNav" />
-            <NavMain label="AI" :items="aiNav" />
+            <NavMain label="Insights" :items="insightsNav" />
 
             <NavMain
                 v-if="adminNav.length"

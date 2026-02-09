@@ -22,6 +22,7 @@ use App\Http\Controllers\DealFollowUpController;
 use App\Http\Controllers\ProductStatsController;
 use App\Http\Controllers\DealProductController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\InsightsController;
 
 
 Route::get('/', function () {
@@ -72,11 +73,26 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::post('/ai/chat', [AIChatController::class, 'chat'])
         ->name('ai.chat');
 
+    /* =====================
+    | Insights (Overview + subpages)
+    ===================== */
+
     Route::get('/insights', [TenantInsightsController::class, 'index'])
         ->name('insights.index');
 
     Route::get('/insights/products', [ProductStatsController::class, 'index'])
         ->name('insights.products');
+
+    /* Placeholders – evitam 404 e mantêm navegação SaaS */
+
+    Route::get('/insights/deals', function () {
+        return Inertia::render('insights/Deals');
+    })->name('insights.deals');
+
+    Route::get('/insights/revenue', function () {
+        return Inertia::render('insights/Revenue');
+    })->name('insights.revenue');
+
 
     Route::post('/ai/tenant/insight', [AIController::class, 'generateTenantInsight'])
         ->name('ai.tenant.insight');

@@ -1,44 +1,21 @@
 <script setup lang="ts">
-import {
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import { toUrl } from '@/lib/utils';
-import { type NavItem } from '@/types';
-
-type Props = {
-    items: NavItem[];
-    class?: string;
-};
-
-defineProps<Props>();
+import { Link } from '@inertiajs/vue3';
 </script>
 
 <template>
-    <SidebarGroup
-        :class="`group-data-[collapsible=icon]:p-0 ${$props.class || ''}`"
-    >
-        <SidebarGroupContent>
-            <SidebarMenu>
-                <SidebarMenuItem v-for="item in items" :key="item.title">
-                    <SidebarMenuButton
-                        class="text-neutral-600 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-100"
-                        as-child
-                    >
-                        <a
-                            :href="toUrl(item.href)"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            <component :is="item.icon" />
-                            <span>{{ item.title }}</span>
-                        </a>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarGroupContent>
-    </SidebarGroup>
+    <footer class="border-t bg-white px-6 py-3 text-sm text-muted-foreground">
+        <div class="mx-auto flex max-w-7xl items-center justify-between gap-4">
+            <span> © {{ new Date().getFullYear() }} CRM SaaS </span>
+
+            <div class="flex gap-4">
+                <Link href="/contact" class="hover:text-primary">
+                    Contact
+                </Link>
+
+                <Link href="/privacy" class="hover:text-primary">
+                    Privacy
+                </Link>
+            </div>
+        </div>
+    </footer>
 </template>

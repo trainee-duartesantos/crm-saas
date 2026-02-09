@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import AIChat from '@/components/AIChat.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
 import {
@@ -263,13 +262,6 @@ onMounted(() => {
                 </button>
             </div>
         </div>
-
-        <!-- AI CHAT (GLOBAL CRM QUERY) -->
-        <AIChat
-            endpoint="/ai/chat"
-            page="insights"
-            placeholder="Pergunta algo sobre negócios, pessoas ou atividades…"
-        />
 
         <!-- Charts -->
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import AIChat from '@/components/AIChat.vue'; // 🤖 AI CHAT
+import AIChat from '@/components/AIChat.vue';
 import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
+import NavFooter from '@/components/NavFooter.vue';
 import type { BreadcrumbItem } from '@/types';
 import { usePage } from '@inertiajs/vue3';
 
@@ -24,13 +25,19 @@ withDefaults(defineProps<Props>(), {
         <!-- Sidebar -->
         <AppSidebar :role="user.role" />
 
-        <!-- Conteúdo principal -->
-        <AppContent variant="sidebar" class="overflow-x-hidden">
-            <AppSidebarHeader :breadcrumbs="breadcrumbs" />
-            <slot />
-        </AppContent>
+        <!-- Main column -->
+        <div class="flex min-h-screen flex-1 flex-col">
+            <!-- Content -->
+            <AppContent variant="sidebar" class="flex-1 overflow-x-hidden">
+                <AppSidebarHeader :breadcrumbs="breadcrumbs" />
+                <slot />
+            </AppContent>
 
-        <!-- 🤖 AI CHAT GLOBAL (FLOATING) -->
+            <!-- Footer global -->
+            <NavFooter />
+        </div>
+
+        <!-- 🤖 AI CHAT GLOBAL (ONLY HERE) -->
         <AIChat
             endpoint="/ai/chat"
             page="global"

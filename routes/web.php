@@ -25,6 +25,7 @@ use App\Http\Controllers\BillingController;
 use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\DealFollowUpController;
+use App\Http\Controllers\PublicContactController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,6 +44,12 @@ Route::get('/invites/accept/{token}', [InviteAcceptController::class, 'show'])
 
 Route::post('/invites/accept', [InviteAcceptController::class, 'store'])
     ->name('invites.accept.store');
+
+Route::get('/contact', [PublicContactController::class, 'show'])
+    ->name('contact');
+
+Route::post('/contact', [PublicContactController::class, 'store'])
+    ->name('contact.store');
 
 /*
 |--------------------------------------------------------------------------

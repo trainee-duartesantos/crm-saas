@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppLayout from '@/layouts/AppLayout.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
@@ -9,6 +10,10 @@ defineProps<{
     activities?: number;
     plan?: string;
 }>();
+
+defineOptions({
+    layout: AppLayout,
+});
 </script>
 
 <template>

@@ -31,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'tenant' => \App\Http\Middleware\EnsureTenant::class,
+            'role' => \App\Http\Middleware\RequireRole::class,
         ]);
 
         $middleware->appendToGroup('auth', [

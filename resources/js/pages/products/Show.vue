@@ -6,11 +6,11 @@ defineOptions({ layout: AppLayout });
 
 const props = defineProps<{
     product: any;
+    breakdown: Record<string, { units: number; value: number }>;
+    timeline: { month: string; value: number }[];
+    margin: number | null;
 }>();
 
-/* -----------------------
-   Computed stats
------------------------ */
 const totalUnits = computed(() =>
     props.product.deals.reduce(
         (sum: number, deal: any) => sum + deal.pivot.quantity,
@@ -31,19 +31,17 @@ const totalValue = computed(() =>
     <div class="mx-auto max-w-6xl space-y-6">
         <!-- Header -->
         <div class="flex items-center justify-between">
-            <h1 class="text-2xl font-semibold">
-                {{ product.name }}
-            </h1>
+            <h1 class="text-2xl font-semibold">{{ product.name }}</h1>
 
             <a
                 href="/insights/products"
                 class="rounded border px-4 py-2 text-sm hover:bg-gray-50"
             >
-                ← Back to product statistics
+                Back to product statistics
             </a>
         </div>
 
-        <!-- Product metrics -->
+        <!-- Global metrics -->
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div class="rounded border bg-white p-4">
                 <div class="text-sm text-gray-500">Unit price</div>
@@ -54,9 +52,7 @@ const totalValue = computed(() =>
 
             <div class="rounded border bg-white p-4">
                 <div class="text-sm text-gray-500">Total units</div>
-                <div class="text-lg font-semibold">
-                    {{ totalUnits }}
-                </div>
+                <div class="text-lg font-semibold">{{ totalUnits }}</div>
             </div>
 
             <div class="rounded border bg-white p-4">
@@ -65,6 +61,58 @@ const totalValue = computed(() =>
                     € {{ totalValue.toFixed(2) }}
                 </div>
             </div>
+        </div>
+
+        <!-- Breakdown -->
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div
+                v-for="(data, status) in breakdown"
+                :key="status"
+                class="rounded border bg-white p-4"
+            >
+                <div class="text-xs text-gray-500 uppercase">
+                    {{ status }}
+                </div>
+
+                <div class="mt-1 text-sm">{{ data.units }} units</div>
+
+                <div class="text-lg font-semibold">
+                    € {{ data.value.toFixed(2) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="rounded border bg-white p-5">
+            <h3 class="mb-3 text-sm font-semibold text-gray-700">
+                Revenue over time
+            </h3>
+
+            <div v-if="timeline.length === 0" class="text-sm text-gray-500">
+                No historical data yet.
+            </div>
+
+            <ul v-else class="space-y-2 text-sm">
+                <li
+                    v-for="row in timeline"
+                    :key="row.month"
+                    class="flex justify-between"
+                >
+                    <span>{{ row.month }}</span>
+                    <span>€ {{ row.value.toFixed(2) }}</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Margin -->
+        <div class="rounded border bg-white p-4">
+            <div class="text-sm text-gray-500">Margin</div>
+
+            <div v-if="margin !== null" class="text-lg font-semibold">
+                € {{ margin.toFixed(2) }}
+            </div>
+
+            <div v-else class="text-sm text-gray-400">No cost defined</div>
         </div>
 
         <!-- Deals table -->

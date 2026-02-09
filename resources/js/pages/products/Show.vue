@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import { router } from '@inertiajs/vue3';
 import {
     CategoryScale,
     Chart,
+    Filler,
     Legend,
     LinearScale,
     LineController,
@@ -10,7 +12,7 @@ import {
     PointElement,
     Tooltip,
 } from 'chart.js';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 Chart.register(
     LineController,
@@ -19,6 +21,7 @@ Chart.register(
     LinearScale,
     CategoryScale,
     Tooltip,
+    Filler,
     Legend,
 );
 
@@ -27,34 +30,41 @@ defineOptions({ layout: AppLayout });
 const props = defineProps<{
     product: any;
     breakdown: Record<string, { units: number; value: number }>;
-    timeline: {
-        month: string;
-        won: number;
-        lost: number;
-        margin: number | null;
-    }[];
-    period: string;
+    timeline: { month: string; value: number }[];
+    margin: number | null;
+    filters: { period: string };
 }>();
 
-/* -----------------------
-   Global stats
------------------------ */
 const totalUnits = computed(() =>
-    props.product.deals.reduce(
-        (sum: number, d: any) => sum + d.pivot.quantity,
+    (props.product.deals ?? []).reduce(
+        (sum: number, deal: any) => sum + Number(deal.pivot?.quantity ?? 0),
         0,
     ),
 );
 
 const totalValue = computed(() =>
-    props.product.deals.reduce(
-        (sum: number, d: any) => sum + d.pivot.quantity * d.pivot.unit_price,
-        0,
-    ),
+    (props.product.deals ?? []).reduce((sum: number, deal: any) => {
+        const q = Number(deal.pivot?.quantity ?? 0);
+        const u = Number(deal.pivot?.unit_price ?? 0);
+        return sum + q * u;
+    }, 0),
 );
 
 /* -----------------------
-   Chart
+   Period filter
+----------------------- */
+const period = ref(props.filters?.period ?? 'all');
+
+watch(period, (v) => {
+    router.get(
+        `/products/${props.product.id}`,
+        { period: v },
+        { preserveState: true, preserveScroll: true },
+    );
+});
+
+/* -----------------------
+   Chart.js
 ----------------------- */
 const chartRef = ref<HTMLCanvasElement | null>(null);
 let chart: Chart | null = null;
@@ -64,52 +74,55 @@ const renderChart = () => {
 
     if (chart) chart.destroy();
 
+    const labels = props.timeline.map((t) => t.month);
+    const data = props.timeline.map((t) => Number(t.value));
+
     chart = new Chart(chartRef.value, {
         type: 'line',
         data: {
-            labels: props.timeline.map((t) => t.month),
+            labels,
             datasets: [
                 {
-                    label: 'Won (€)',
-                    data: props.timeline.map((t) => t.won),
-                    borderColor: '#16a34a',
+                    label: 'Revenue (€)',
+                    data,
                     tension: 0.3,
+                    fill: true,
                 },
-                {
-                    label: 'Lost (€)',
-                    data: props.timeline.map((t) => t.lost),
-                    borderColor: '#dc2626',
-                    tension: 0.3,
-                },
-                ...(props.timeline.some((t) => t.margin !== null)
-                    ? [
-                          {
-                              label: 'Margin (€)',
-                              data: props.timeline.map((t) => t.margin),
-                              borderColor: '#9333ea',
-                              borderDash: [5, 5],
-                              tension: 0.3,
-                          },
-                      ]
-                    : []),
             ],
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `€ ${Number(ctx.raw).toFixed(2)}`,
+                    },
+                },
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: (v) => `€ ${v}`,
+                    },
+                },
+            },
         },
     });
 };
 
 onMounted(renderChart);
-watch(() => props.timeline, renderChart);
 
-/* -----------------------
-   Period filter
------------------------ */
-const setPeriod = (p: string) => {
-    window.location.href = `/products/${props.product.id}?period=${p}`;
-};
+watch(
+    () => props.timeline,
+    () => renderChart(),
+    { deep: true },
+);
+
+onBeforeUnmount(() => {
+    if (chart) chart.destroy();
+});
 </script>
 
 <template>
@@ -122,31 +135,30 @@ const setPeriod = (p: string) => {
                 href="/insights/products"
                 class="rounded border px-4 py-2 text-sm hover:bg-gray-50"
             >
-                ← Back
+                Back to product statistics
             </a>
         </div>
 
         <!-- Period filter -->
-        <div class="flex gap-2">
-            <button
-                @click="setPeriod('30')"
-                :class="period === '30' ? 'bg-indigo-600 text-white' : 'border'"
-                class="rounded px-3 py-1 text-sm"
-            >
-                Last 30 days
-            </button>
+        <div class="flex items-center gap-2">
+            <div class="text-sm text-gray-500">Period:</div>
 
-            <button
-                @click="setPeriod('90')"
-                :class="period === '90' ? 'bg-indigo-600 text-white' : 'border'"
-                class="rounded px-3 py-1 text-sm"
-            >
-                Last 90 days
-            </button>
+            <select v-model="period" class="rounded border px-3 py-2 text-sm">
+                <option value="all">All time</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+            </select>
         </div>
 
-        <!-- KPIs -->
+        <!-- Global metrics -->
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div class="rounded border bg-white p-4">
+                <div class="text-sm text-gray-500">Unit price</div>
+                <div class="text-lg font-semibold">
+                    € {{ product.unit_price }}
+                </div>
+            </div>
+
             <div class="rounded border bg-white p-4">
                 <div class="text-sm text-gray-500">Total units</div>
                 <div class="text-lg font-semibold">{{ totalUnits }}</div>
@@ -171,26 +183,99 @@ const setPeriod = (p: string) => {
                     {{ status }}
                 </div>
 
-                <div class="text-sm">{{ data.units }} units</div>
+                <div class="mt-1 text-sm">{{ data.units }} units</div>
+
                 <div class="text-lg font-semibold">
-                    € {{ data.value.toFixed(2) }}
+                    € {{ Number(data.value).toFixed(2) }}
                 </div>
             </div>
         </div>
 
-        <!-- Chart -->
+        <!-- Timeline chart -->
         <div class="rounded border bg-white p-5">
-            <h3 class="mb-3 text-sm font-semibold">
-                Revenue / Margin over time
+            <h3 class="mb-3 text-sm font-semibold text-gray-700">
+                Revenue over time
             </h3>
 
             <div v-if="timeline.length === 0" class="text-sm text-gray-500">
-                No data yet.
+                No historical data yet.
             </div>
 
             <div v-else class="h-64">
                 <canvas ref="chartRef"></canvas>
             </div>
+        </div>
+
+        <!-- Margin -->
+        <div class="rounded border bg-white p-4">
+            <div class="text-sm text-gray-500">Margin</div>
+
+            <div v-if="margin !== null" class="text-lg font-semibold">
+                € {{ margin.toFixed(2) }}
+            </div>
+
+            <div v-else class="text-sm text-gray-400">No cost defined</div>
+        </div>
+
+        <!-- Deals table -->
+        <div class="rounded-lg border bg-white p-5">
+            <h2 class="mb-3 text-sm font-semibold text-gray-700">
+                Deals using this product
+            </h2>
+
+            <div
+                v-if="(product.deals ?? []).length === 0"
+                class="text-sm text-gray-500"
+            >
+                This product has not been used in any deals yet.
+            </div>
+
+            <table v-else class="w-full border text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="p-2 text-left">Deal</th>
+                        <th class="p-2 text-right">Status</th>
+                        <th class="p-2 text-right">Qty</th>
+                        <th class="p-2 text-right">Unit €</th>
+                        <th class="p-2 text-right">Total €</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr v-for="deal in product.deals" :key="deal.id">
+                        <td class="p-2">
+                            <a
+                                :href="`/deals/${deal.id}`"
+                                class="text-indigo-600 hover:underline"
+                            >
+                                {{ deal.title }}
+                            </a>
+                        </td>
+
+                        <td class="p-2 text-right">
+                            {{ deal.status }}
+                        </td>
+
+                        <td class="p-2 text-right">
+                            {{ deal.pivot.quantity }}
+                        </td>
+
+                        <td class="p-2 text-right">
+                            € {{ deal.pivot.unit_price }}
+                        </td>
+
+                        <td class="p-2 text-right">
+                            €
+                            {{
+                                (
+                                    Number(deal.pivot.quantity) *
+                                    Number(deal.pivot.unit_price)
+                                ).toFixed(2)
+                            }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </template>

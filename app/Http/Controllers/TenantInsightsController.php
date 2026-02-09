@@ -60,6 +60,14 @@ class TenantInsightsController extends Controller
             default => 'high',
         };
 
+        // 🔎 DEBUG TEMPORÁRIO — confirma permissões reais
+        logger()->info('INSIGHTS PERMISSIONS', [
+            'role' => auth()->user()->role,
+            'is_owner' => auth()->user()->isOwner(),
+            'ai_generate' => auth()->user()->can('insights.ai.generate'),
+            'ai_next_action' => auth()->user()->can('insights.ai.next-action'),
+        ]);
+        
         return Inertia::render('insights/Index', [
             'metrics' => [
                 'invites_total' => $invitesTotal,

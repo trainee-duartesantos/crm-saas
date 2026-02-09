@@ -12,6 +12,9 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\EnsureTenant;
 use App\Http\Middleware\RequireRole;
 
+// 👇 ESTE IMPORT É O QUE FALTAVA
+use App\Providers\AuthServiceProvider;
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__ . '/../routes/web.php',
@@ -20,7 +23,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
 
-    // ✅ POLICIES (Laravel 12)
+    // ✅ REGISTAR PROVIDERS (Laravel 12)
+    ->withProviders([
+        AuthServiceProvider::class,
+    ])
+
     ->withMiddleware(function (Middleware $middleware): void {
 
         $middleware->encryptCookies(except: [

@@ -11,15 +11,26 @@ class ProductController extends Controller
     {
         abort_if($product->tenant_id !== app('tenant')->id, 403);
 
+        $period = request('period', '90');
+
+        $from = match ($period) {
+            '30' => now()->subDays(30),
+            '90' => now()->subDays(90),
+            default => null,
+        };
+
         $product->load([
-            'deals' => function ($q) {
-                $q->withPivot(['quantity', 'unit_price', 'created_at'])
-                  ->select('deals.id', 'title', 'status');
+            'deals' => function ($q) use ($from) {
+                $q->select('deals.id', 'title', 'status')
+                ->withPivot(['quantity', 'unit_price', 'created_at'])
+                ->when($from, fn ($q) =>
+                    $q->wherePivot('created_at', '>=', $from)
+                );
             },
         ]);
 
         /* -----------------------
-           Breakdown by status
+        Breakdown by status
         ----------------------- */
         $breakdown = $product->deals
             ->groupBy('status')
@@ -31,46 +42,45 @@ class ProductController extends Controller
             ]);
 
         /* -----------------------
-           Timeline (by month)
+        Timeline (won / lost / margin)
         ----------------------- */
         $timeline = $product->deals
-            ->filter(fn ($d) => $d->pivot->created_at)
-            ->groupBy(fn ($d) =>
-                $d->pivot->created_at->format('Y-m')
-            )
-            ->map(fn ($deals) => [
-                'value' => $deals->sum(
+            ->groupBy(fn ($d) => $d->pivot->created_at->format('Y-m'))
+            ->map(function ($deals) use ($product) {
+                $won = $deals->where('status', 'won');
+                $lost = $deals->where('status', 'lost');
+
+                $wonValue = $won->sum(
                     fn ($d) => $d->pivot->quantity * $d->pivot->unit_price
-                ),
-            ])
-            ->map(fn ($data, $month) => [
-                'month' => $month,
-                'value' => $data['value'],
-            ])
+                );
+
+                $lostValue = $lost->sum(
+                    fn ($d) => $d->pivot->quantity * $d->pivot->unit_price
+                );
+
+                $margin = $product->cost
+                    ? $won->sum(
+                        fn ($d) =>
+                            ($d->pivot->unit_price - $product->cost)
+                            * $d->pivot->quantity
+                    )
+                    : null;
+
+                return [
+                    'won' => $wonValue,
+                    'lost' => $lostValue,
+                    'margin' => $margin,
+                ];
+            })
+            ->map(fn ($v, $month) => array_merge(['month' => $month], $v))
             ->values();
 
-        /* -----------------------
-           Revenue / Margin
-        ----------------------- */
-        $revenue = $product->deals->sum(
-            fn ($d) => $d->pivot->quantity * $d->pivot->unit_price
-        );
-
-        $cost = $product->cost
-            ? $product->deals->sum(
-                fn ($d) => $d->pivot->quantity * $product->cost
-            )
-            : null;
-
-        $margin = $cost !== null ? $revenue - $cost : null;
-
         return Inertia::render('products/Show', [
-            'product'   => $product,
+            'product' => $product,
             'breakdown' => $breakdown,
-            'timeline'  => $timeline,
-            'revenue'   => $revenue,
-            'cost'      => $cost,
-            'margin'    => $margin,
+            'timeline' => $timeline,
+            'period' => $period,
         ]);
     }
+
 }

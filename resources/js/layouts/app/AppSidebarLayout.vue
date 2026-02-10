@@ -8,8 +8,12 @@ import NavFooter from '@/components/NavFooter.vue';
 import type { BreadcrumbItem } from '@/types';
 import { usePage } from '@inertiajs/vue3';
 
+export type Role = 'user' | 'admin' | 'owner';
+
 const page = usePage();
-const user = page.props.auth.user;
+
+const role: Role =
+    (page.props.auth?.user as { role?: Role } | undefined)?.role ?? 'user';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -23,21 +27,19 @@ withDefaults(defineProps<Props>(), {
 <template>
     <AppShell variant="sidebar">
         <!-- Sidebar -->
-        <AppSidebar :role="user.role" />
+        <AppSidebar :role="role" />
 
         <!-- Main column -->
         <div class="flex min-h-screen flex-1 flex-col">
-            <!-- Content -->
             <AppContent variant="sidebar" class="flex-1 overflow-x-hidden">
                 <AppSidebarHeader :breadcrumbs="breadcrumbs" />
                 <slot />
             </AppContent>
 
-            <!-- Footer global -->
             <NavFooter />
         </div>
 
-        <!-- 🤖 AI CHAT GLOBAL (ONLY HERE) -->
+        <!-- 🤖 AI CHAT GLOBAL -->
         <AIChat
             endpoint="/ai/chat"
             page="global"

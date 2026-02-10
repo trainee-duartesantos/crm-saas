@@ -1,12 +1,22 @@
 import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+export type Role = 'user' | 'admin' | 'owner';
 
 export function useRole() {
-    const user = usePage().props.auth.user;
+    const page = usePage();
+
+    const role = computed<Role>(() => {
+        const user = page.props.auth?.user as { role?: Role } | undefined;
+        return user?.role ?? 'user';
+    });
 
     return {
-        role: user.role,
-        isOwner: user.role === 'owner',
-        isAdmin: ['admin', 'owner'].includes(user.role),
-        isUser: user.role === 'user',
+        role,
+        isOwner: computed(() => role.value === 'owner'),
+        isAdmin: computed(
+            () => role.value === 'admin' || role.value === 'owner',
+        ),
+        isUser: computed(() => role.value === 'user'),
     };
 }

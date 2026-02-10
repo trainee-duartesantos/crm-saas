@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AIInsightStream from '@/components/ai/AIInsightStream.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
 import {
@@ -176,27 +177,12 @@ onMounted(() => {
         </div>
 
         <!-- AI INSIGHT -->
-        <div class="rounded-lg border border-indigo-300 bg-indigo-50 p-6">
-            <div class="mb-2 flex items-center justify-between">
-                <div
-                    class="flex items-center gap-2 text-lg font-semibold text-indigo-900"
-                >
-                    <div class="flex items-center gap-2">
-                        🤖 AI Executive Insight
-                        <span
-                            class="rounded bg-indigo-600 px-2 py-0.5 text-xs text-white"
-                        >
-                            AI-generated
-                        </span>
-
-                        <span
-                            v-if="lastInsight?.confidence"
-                            class="rounded bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700"
-                        >
-                            {{ Math.round(lastInsight.confidence * 100) }}%
-                            confidence
-                        </span>
-                    </div>
+        <div
+            class="space-y-4 rounded-lg border border-indigo-300 bg-indigo-50 p-6"
+        >
+            <div class="flex items-center justify-between">
+                <div class="text-lg font-semibold text-indigo-900">
+                    🤖 AI Executive Insight
                 </div>
 
                 <span
@@ -211,32 +197,25 @@ onMounted(() => {
                 >
                     {{ engagementScore.toUpperCase() }} engagement
                 </span>
-                <span
-                    v-if="lastInsight?.generated_at"
-                    class="text-xs text-indigo-600"
-                >
-                    Updated {{ timeAgo(lastInsight.generated_at) }}
-                </span>
             </div>
 
-            <!-- 🧠 Explain WHY -->
+            <!-- Last insight (stored) -->
             <p
                 v-if="lastInsight"
-                class="mt-3 text-sm leading-relaxed text-indigo-800"
+                class="text-sm leading-relaxed text-indigo-800"
             >
                 {{ lastInsight.message }}
             </p>
 
             <div
                 v-else
-                class="mt-4 rounded border border-dashed border-indigo-300 bg-white/60 p-4 text-sm text-indigo-600"
+                class="rounded border border-dashed border-indigo-300 bg-white/60 p-4 text-sm text-indigo-600"
             >
-                🤖 No AI insight yet. Generate one to understand tenant
-                engagement and next best actions.
+                No AI insight generated yet.
             </div>
 
-            <!-- AI INSIGHT ACTIONS -->
-            <div class="mt-4 flex flex-wrap gap-3">
+            <!-- ACTIONS -->
+            <div class="flex flex-wrap gap-3">
                 <button
                     v-if="can.ai_generate"
                     @click="generateInsight"
@@ -261,6 +240,20 @@ onMounted(() => {
                     Copy insight
                 </button>
             </div>
+
+            <!-- 🔴 LIVE AI STREAM -->
+            <div class="border-t border-indigo-200 pt-4">
+                <div
+                    class="mb-2 flex items-center gap-2 text-sm font-semibold text-indigo-700"
+                >
+                    <span
+                        class="h-2 w-2 animate-pulse rounded-full bg-indigo-600"
+                    ></span>
+                    Live AI output
+                </div>
+
+                <AIInsightStream />
+            </div>
         </div>
 
         <!-- Charts -->
@@ -268,7 +261,7 @@ onMounted(() => {
             <div class="rounded-lg border bg-white p-4">
                 <div class="mb-3 font-semibold">Invites status</div>
                 <canvas
-                    v-if="charts.invites.data.some((v) => v > 0)"
+                    v-if="charts.invites.data.some((v: number) => v > 0)"
                     ref="invitesCanvas"
                 />
 
@@ -280,7 +273,7 @@ onMounted(() => {
             <div class="rounded-lg border bg-white p-4">
                 <div class="mb-3 font-semibold">Activity volume</div>
                 <canvas
-                    v-if="charts.activity.data.some((v) => v > 0)"
+                    v-if="charts.activity.data.some((v: number) => v > 0)"
                     ref="activityCanvas"
                 />
 

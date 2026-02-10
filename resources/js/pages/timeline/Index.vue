@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Heading from '@/components/Heading.vue';
+import TimelineStream from '@/components/timeline/TimelineStream.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
 
@@ -57,8 +58,22 @@ const badgeClasses = (action: string) => {
     <div class="mx-auto max-w-4xl space-y-6">
         <Heading
             title="Timeline"
-            description="System and AI activity history"
+            description="System and AI activity history (live)"
         />
+
+        <!-- 🔴 LIVE STREAM -->
+        <div class="rounded-lg border border-dashed bg-gray-50 p-4">
+            <div
+                class="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700"
+            >
+                <span
+                    class="h-2 w-2 animate-pulse rounded-full bg-red-500"
+                ></span>
+                Live activity
+            </div>
+
+            <TimelineStream />
+        </div>
 
         <!-- AI actions -->
         <div class="flex flex-wrap gap-2">
@@ -91,7 +106,7 @@ const badgeClasses = (action: string) => {
             </button>
         </div>
 
-        <!-- Timeline items -->
+        <!-- Timeline history -->
         <div class="space-y-4">
             <div
                 v-for="item in items"
@@ -99,25 +114,21 @@ const badgeClasses = (action: string) => {
                 class="space-y-2 rounded-lg border p-5"
                 :class="cardClasses(item.action)"
             >
-                <div class="flex items-start justify-between gap-3">
-                    <div>
-                        <div class="text-xs text-gray-500">
-                            {{ item.created_at }}
-                        </div>
+                <div class="text-xs text-gray-500">
+                    {{ item.created_at }}
+                </div>
 
-                        <div class="mt-1 flex items-center gap-2">
-                            <span
-                                v-if="isAI(item.action)"
-                                class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
-                                :class="badgeClasses(item.action)"
-                            >
-                                {{ badgeLabel(item.action) }}
-                            </span>
+                <div class="mt-1 flex items-center gap-2">
+                    <span
+                        v-if="isAI(item.action)"
+                        class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
+                        :class="badgeClasses(item.action)"
+                    >
+                        {{ badgeLabel(item.action) }}
+                    </span>
 
-                            <div class="font-semibold text-gray-900">
-                                {{ item.action }}
-                            </div>
-                        </div>
+                    <div class="font-semibold text-gray-900">
+                        {{ item.action }}
                     </div>
                 </div>
 
@@ -144,31 +155,18 @@ const badgeClasses = (action: string) => {
                         </div>
                     </div>
 
-                    <div>
-                        <div class="text-xs font-semibold text-gray-600">
-                            Body
-                        </div>
-                        <pre
-                            class="mt-1 rounded bg-white/70 p-3 text-sm whitespace-pre-wrap text-gray-900"
-                            >{{ item.metadata?.body }}</pre
-                        >
-                    </div>
+                    <pre
+                        class="rounded bg-white/70 p-3 text-sm whitespace-pre-wrap text-gray-900"
+                        >{{ item.metadata?.body }}
+                    </pre>
                 </div>
 
-                <!-- Generic AI message -->
                 <div
                     v-else-if="item.metadata?.message"
                     class="mt-3 text-sm text-gray-900"
                 >
                     {{ item.metadata.message }}
                 </div>
-
-                <!-- Fallback -->
-                <pre
-                    v-else-if="item.metadata"
-                    class="mt-3 rounded bg-white/70 p-3 text-xs text-gray-800"
-                    >{{ JSON.stringify(item.metadata, null, 2) }}</pre
-                >
             </div>
 
             <div

@@ -2,9 +2,9 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 
-import AdminDashboard from './Dashboard/AdminDashboard.vue';
-import OwnerDashboard from './Dashboard/OwnerDashboard.vue';
-import UserDashboard from './Dashboard/UserDashboard.vue';
+import AdminDashboard from './dashboards/AdminDashboard.vue';
+import OwnerDashboard from './dashboards/OwnerDashboard.vue';
+import UserDashboard from './dashboards/UserDashboard.vue';
 
 const page = usePage();
 const user = page.props.auth.user;

@@ -103,6 +103,83 @@ Route::middleware(['auth', 'tenant'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | STREAMING (SSE)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/stream/timeline', function () {
+
+        $tenantId = app('tenant')->id;
+
+        return response()->stream(function () use ($tenantId) {
+
+            $lastId = request()->query('last_id', 0);
+
+            while (true) {
+                $events = \App\Models\ActivityLog::query()
+                    ->where('tenant_id', $tenantId)
+                    ->where('id', '>', $lastId)
+                    ->orderBy('id')
+                    ->limit(5)
+                    ->get();
+
+                foreach ($events as $event) {
+                    echo "id: {$event->id}\n";
+                    echo 'data: ' . json_encode([
+                        'id' => $event->id,
+                        'action' => $event->action,
+                        'metadata' => $event->metadata,
+                        'created_at' => $event->created_at->toISOString(),
+                    ]) . "\n\n";
+
+                    $lastId = $event->id;
+                }
+
+                ob_flush();
+                flush();
+
+                sleep(2);
+            }
+
+        }, 200, [
+            'Content-Type' => 'text/event-stream',
+            'Cache-Control' => 'no-cache',
+            'Connection' => 'keep-alive',
+        ]);
+    });
+
+    Route::get('/stream/ai/insight', function () {
+
+        abort_unless(auth()->user()->isOwner(), 403);
+
+        $text = "Based on recent activity, engagement is slowing. I recommend following up with pending invites and scheduling a deal review this week.";
+
+        return response()->stream(function () use ($text) {
+
+            foreach (str_split($text, 3) as $chunk) {
+                echo "data: " . json_encode([
+                    'chunk' => $chunk,
+                ]) . "\n\n";
+
+                ob_flush();
+                flush();
+
+                usleep(120000);
+            }
+
+            echo "event: end\n";
+            echo "data: done\n\n";
+
+        }, 200, [
+            'Content-Type' => 'text/event-stream',
+            'Cache-Control' => 'no-cache',
+            'Connection' => 'keep-alive',
+        ]);
+    });
+
+
+    /*
+    |--------------------------------------------------------------------------
     | CRM
     |--------------------------------------------------------------------------
     */

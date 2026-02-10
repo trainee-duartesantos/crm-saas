@@ -96,7 +96,7 @@ defineOptions({
                 href="/insights"
                 class="mt-4 inline-flex items-center rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
             >
-                Open Insights →
+                Open Insights
             </Link>
         </div>
 
@@ -116,14 +116,14 @@ defineOptions({
 
                 <Link
                     href="/activities"
-                    class="flex w-full items-center justify-center rounded border px-4 py-3 text-sm hover:bg-gray-50"
+                    class="flex w-full items-center justify-center rounded bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700"
                 >
                     Activities
                 </Link>
 
                 <Link
                     href="/tenant"
-                    class="flex w-full items-center justify-center rounded border px-4 py-3 text-sm hover:bg-gray-50"
+                    class="flex w-full items-center justify-center rounded bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700"
                 >
                     Tenant settings
                 </Link>

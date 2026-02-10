@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { router } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 type EventItem = {
@@ -11,17 +12,33 @@ type EventItem = {
 const items = ref<EventItem[]>([]);
 let source: EventSource | null = null;
 
+const closeStream = () => {
+    if (source) {
+        source.close();
+        source = null;
+    }
+};
+
 onMounted(() => {
     source = new EventSource('/stream/timeline');
 
     source.onmessage = (event) => {
-        const data: EventItem = JSON.parse(event.data);
+        const data = JSON.parse(event.data);
         items.value.unshift(data);
     };
+
+    source.onerror = () => {
+        closeStream();
+    };
+
+    // 🔴 FECHA STREAM AO NAVEGAR
+    router.on('before', () => {
+        closeStream();
+    });
 });
 
 onBeforeUnmount(() => {
-    source?.close();
+    closeStream();
 });
 </script>
 

@@ -45,14 +45,37 @@ const props = defineProps<{
 const invitesCanvas = ref<HTMLCanvasElement | null>(null);
 const activityCanvas = ref<HTMLCanvasElement | null>(null);
 
+const loadingInsight = ref(false);
+const loadingNextAction = ref(false);
+
 const generateInsight = () => {
-    if (!props.can.ai_generate) return;
-    router.post('/ai/tenant/insight');
+    if (!props.can.ai_generate || loadingInsight.value) return;
+
+    loadingInsight.value = true;
+
+    router.post(
+        '/ai/tenant/insight',
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => (loadingInsight.value = false),
+        },
+    );
 };
 
 const generateNextAction = () => {
-    if (!props.can.ai_next_action) return;
-    router.post('/ai/tenant/next-action');
+    if (!props.can.ai_next_action || loadingNextAction.value) return;
+
+    loadingNextAction.value = true;
+
+    router.post(
+        '/ai/tenant/next-action',
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => (loadingNextAction.value = false),
+        },
+    );
 };
 
 const copyInsight = () => {
@@ -218,18 +241,24 @@ onMounted(() => {
             <div class="flex flex-wrap gap-3">
                 <button
                     v-if="can.ai_generate"
+                    :disabled="loadingInsight"
                     @click="generateInsight"
-                    class="rounded bg-indigo-600 px-4 py-2 text-white"
+                    class="rounded bg-indigo-600 px-4 py-2 text-white disabled:opacity-50"
                 >
-                    Generate insight
+                    {{ loadingInsight ? 'Generating…' : 'Generate insight' }}
                 </button>
 
                 <button
                     v-if="can.ai_next_action"
+                    :disabled="loadingNextAction"
                     @click="generateNextAction"
-                    class="rounded bg-emerald-600 px-4 py-2 text-white"
+                    class="rounded bg-emerald-600 px-4 py-2 text-white disabled:opacity-50"
                 >
-                    🤖 What should I do next?
+                    {{
+                        loadingNextAction
+                            ? 'Thinking…'
+                            : '🤖 What should I do next?'
+                    }}
                 </button>
 
                 <button
